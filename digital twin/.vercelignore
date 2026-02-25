@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+.git/
+.gemini/
+dev_archives/
+standalone_tools/
+results/
+MODEL_PATCHES.md
+SERVER_ACCESS.txt
+inspect_accuracy.py
+check_diagnosis_model.py
+debug_model.py
+patch_diagnosis.py
+test_localization.py
+get-pip.py

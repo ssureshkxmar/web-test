@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link href="./css/global.css" rel="stylesheet" />
+    <link href="./css/viewer.css" rel="stylesheet" />
+    <link href="./css/chat.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>BioDigital Valve Engine | SmartECG AI</title>
+    <script>
+        // Check if we are in an iframe and hide navbar if so
+        if (window.self !== window.top) {
+            document.documentElement.classList.add('is-iframe');
+            window.addEventListener('load', () => {
+                const nav = document.querySelector('.navbar-container');
+                if (nav) nav.style.display = 'none';
+                const main = document.querySelector('.frame-layout');
+                if (main) main.style.paddingTop = '0';
+                const wait = document.getElementById('wait-screen');
+                if (wait) wait.style.display = 'none'; // Skip loader in embed
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="ambient-bg"></div>
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="/" class="logo" style="margin-left: 10px;">SMARTECG AI</a>
+                <div class="nav-divider" style="height: 30px;"></div>
+                <div class="nav-box">
+                    <a href="/analyze" class="nav-btn">
+                        <i class="fas fa-microscope"></i> Analyze
+                    </a>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="user-profile-section" style="display: none; align-items: center; gap: 10px;">
+                    <div class="nav-box">
+                        <button id="history-toggle-btn" class="nav-btn" title="History">
+                            <i class="fas fa-history"></i>
+                        </button>
+                    </div>
+                    <div class="nav-box">
+                        <div style="display: flex; align-items: center; padding: 0 8px; gap: 10px;">
+                            <img id="user-avatar" src=""
+                                style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);">
+                            <span id="user-name-disp"
+                                style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); white-space: nowrap;">User</span>
+                        </div>
+                    </div>
+                    <div class="nav-box">
+                        <button id="sign-out-btn" class="nav-btn danger" title="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="status-tag">ACTIVE ENGINE</div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- History Sidebar -->
+    <div id="history-sidebar" class="history-panel">
+        <div class="history-header">
+            <h3>PATIENT HISTORY</h3>
+            <button id="close-history-btn"
+                style="background:none; border:none; color:#fff; cursor:pointer;">&times;</button>
+        </div>
+        <div id="history-list" class="history-list-container">
+            <!-- History Items Injected Here -->
+            <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.3); font-size: 0.8rem;">
+                No analysis history found.
+            </div>
+        </div>
+    </div>
+
+    <main class="frame-layout">
+        <div id="viewport-container">
+            <div id="canvas-container"></div>
+            <!-- Engine Hooks -->
+            <input type="range" id="speed" min="0" max="2" step="0.01" value="0.8" style="display:none;" />
+        </div>
+
+        <aside class="control-panel">
+            <div class="ui-segment">
+                <h3 class="segment-label">System Control</h3>
+                <div class="input-row">
+                    <label>Dynamics Sync</label>
+                    <label class="switch">
+                        <input type="checkbox" id="modelToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="ui-segment" style="gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="font-weight: 600;">Neural Tempo</label>
+                        <button id="mute-btn" class="icon-btn" title="Toggle Audio">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                                <path id="sound-active" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-row">
+                        <input type="range" id="bpm-input" min="40" max="180" value="72" style="flex: 1;" />
+                        <span id="bpm-display"
+                            style="min-width: 3ch; text-align: right; color: var(--secondary); font-weight: 700; margin-left: 8px;">72</span>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <label>Layer Opacity</label>
+                    <select id="opacitySlider"
+                        style="background: #1e293b; color: white; border: 1px solid var(--border); border-radius: 4px;">
+                        <option value="1">100%</option>
+                        <option value="0.75">75%</option>
+                        <option value="0.5">50%</option>
+                        <option value="0.25">25%</option>
+                    </select>
+                </div>
+
+                <div class="ui-segment"
+                    style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                    <h3 class="segment-label">Virtualization Form</h3>
+                    <div class="input-row">
+                        <select id="heartview-mode"
+                            style="width: 100%; background: #1e293b; color: var(--secondary); border: 1px solid var(--primary); border-radius: 6px; padding: 8px; font-weight: 700; font-size: 0.75rem;">
+                            <option value="solid">SOLID HIGH-FIDELITY</option>
+                            <option value="wire">WIREFRAME MESH</option>
+                            <option value="xray">X-RAY ANALYSIS</option>
+                            <option value="blueprint">CYAN BLUEPRINT</option>
+                            <option value="thermal">THERMAL FLOW</option>
+                            <option value="contrast">BIO-CONTRAST</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-segment">
+                <h3 class="segment-label">Tissue Layers</h3>
+                <div class="input-row"><label>Myocardium</label>
+                    <div class="slider-eye-group"><input type="range" id="Heartmuscles" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="Heartmuscles"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Conduction Nodes</label>
+                    <div class="slider-eye-group"><input type="range" id="sanvan" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="sanvan"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Interior Lattice</label>
+                    <div class="slider-eye-group"><input type="range" id="internal" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="internal"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-segment">
+                <h3 class="segment-label">Vascular Network</h3>
+                <div class="input-row"><label>Aortic Arc</label>
+                    <div class="slider-eye-group"><input type="range" id="Largevessels" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="Largevessels"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Micro-vessel</label>
+                    <div class="slider-eye-group"><input type="range" id="Smallvessels" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="Smallvessels"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Sup. Vena Cava</label>
+                    <div class="slider-eye-group"><input type="range" id="SVenaCava" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="SVenaCava"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Inf. Vena Cava</label>
+                    <div class="slider-eye-group"><input type="range" id="IVenaCava" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="IVenaCava"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Pulmonary Trunk</label>
+                    <div class="slider-eye-group"><input type="range" id="Pulmonaryvessels" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="Pulmonaryvessels"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-segment">
+                <h3 class="segment-label">Cardiac Chambers</h3>
+                <div class="input-row"><label>Atrial Left</label>
+                    <div class="slider-eye-group"><input type="range" id="la" min="0" max="1" step="0.01" value="1" />
+                        <div class="eye-toggle" data-target="la"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Atrial Right</label>
+                    <div class="slider-eye-group"><input type="range" id="ra" min="0" max="1" step="0.01" value="1" />
+                        <div class="eye-toggle" data-target="ra"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Ventricle Left</label>
+                    <div class="slider-eye-group"><input type="range" id="lv" min="0" max="1" step="0.01" value="1" />
+                        <div class="eye-toggle" data-target="lv"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Ventricle Right</label>
+                    <div class="slider-eye-group"><input type="range" id="rv" min="0" max="1" step="0.01" value="1" />
+                        <div class="eye-toggle" data-target="rv"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-segment">
+                <h3 class="segment-label">Valve Mechanics</h3>
+                <div class="input-row"><label>Mitral Valve</label>
+                    <div class="slider-eye-group"><input type="range" id="bicuspid" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="bicuspid"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>Tricuspid Valve</label>
+                    <div class="slider-eye-group"><input type="range" id="tricuspid" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="tricuspid"></div>
+                    </div>
+                </div>
+                <div class="input-row"><label>General Valves</label>
+                    <div class="slider-eye-group"><input type="range" id="valves" min="0" max="1" step="0.01"
+                            value="1" />
+                        <div class="eye-toggle" data-target="valves"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+
+
+        <div id="anatomical-explorer" class="right-panel">
+            <div class="panel-header">
+                <h3 class="segment-label">Anatomical Explorer</h3>
+            </div>
+            <div id="parts-explorer-list" class="parts-list">
+                <!-- Parts will be dynamically injected here -->
+            </div>
+            <div id="part-details-box" class="details-box" style="display: none;">
+                <div class="details-header">
+                    <span id="selected-part-name">Select a Part</span>
+                    <button id="close-details-btn">&times;</button>
+                </div>
+                <div class="mode-buttons">
+                    <button id="mode-separate" class="mode-btn">Separate Mode</button>
+                    <button id="mode-full" class="mode-btn">Full Mode</button>
+                </div>
+                <div class="part-notes">
+                    <label>Clinical Notes</label>
+                    <p id="part-notes-text">No data available for this segment.</p>
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+    <div id="ecg-modal" class="overlay-modal">
+        <div class="modal-base">
+            <div class="modal-top">
+                <h2 style="margin:0;">Clinical Pulse Analysis</h2>
+                <button id="close-ecg-modal"
+                    style="background:none; border:none; color:#64748b; font-size: 1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-inner">
+                <div id="ecg-loading"
+                    style="display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; padding: 20px;">
+                    <div class="neural-scanner">
+                        <div class="scan-ring ring-1"></div>
+                        <div class="scan-ring ring-2"></div>
+                        <div class="scan-ring ring-3"></div>
+                        <div class="core-structure">
+                            <div class="core-pulse"></div>
+                        </div>
+                        <div class="scanner-laser"></div>
+                        <div class="particle-field"></div>
+                    </div>
+
+                    <div class="analysis-progress-container" style="width: 100%; margin-top: 40px; display: none;">
+                        <div class="progress-header"
+                            style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span
+                                style="font-size: 0.7rem; color: var(--secondary); font-weight: 800; letter-spacing: 0.1em;">SYSTEM
+                                ANALYSIS IN RECURSION</span>
+                            <span id="analysis-percentage"
+                                style="font-size: 0.7rem; color: var(--secondary); font-weight: 800;">0%</span>
+                        </div>
+                        <div class="progress-bar-bg"
+                            style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                            <div id="analysis-progress-fill"
+                                style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s ease;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="analysis-steps-list"
+                        style="width: 100%; margin-top: 24px; display: none; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div class="step-item" id="step-0">
+                            <div class="step-dot"></div><span>Loading Frame</span>
+                        </div>
+                        <div class="step-item" id="step-1">
+                            <div class="step-dot"></div><span>Monochrome Sync</span>
+                        </div>
+                        <div class="step-item" id="step-2">
+                            <div class="step-dot"></div><span>Lead Segmentation</span>
+                        </div>
+                        <div class="step-item" id="step-3">
+                            <div class="step-dot"></div><span>Signal Cleaning</span>
+                        </div>
+                        <div class="step-item" id="step-4">
+                            <div class="step-dot"></div><span>Contour Tracing</span>
+                        </div>
+                        <div class="step-item" id="step-5">
+                            <div class="step-dot"></div><span>Feature Extraction</span>
+                        </div>
+                        <div class="step-item" id="step-6">
+                            <div class="step-dot"></div><span>Latent Mapping</span>
+                        </div>
+                        <div class="step-item" id="step-7">
+                            <div class="step-dot"></div><span>Final Diagnosis</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="ecg-results" style="display: none;">
+                    <div class="prediction-box">
+                        <h3 style="margin:0; font-size: 0.8rem; opacity: 0.5;">PREDICTED ANOMALY</h3>
+                        <p id="prediction-text" class="highlight-text">Normal</p>
+                    </div>
+
+                    <div class="analysis-section">
+                        <div class="grid-visuals">
+                            <div class="visual-item"><label class="block-title">RAW CAPTURE</label><img
+                                    id="res-original" src=""></div>
+                            <div class="visual-item"><label class="block-title">MONOCHROME</label><img
+                                    id="res-grayscale" src=""></div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <label class="block-title">CHANNEL SEGMENTATION</label>
+                        <div class="grid-visuals">
+                            <div class="visual-item"><img id="res-leads" src=""></div>
+                            <div class="visual-item"><img id="res-long-lead" src=""></div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <label class="block-title">PRE-PROCESSING & THRESHOLDING</label>
+                        <div class="grid-visuals">
+                            <div class="visual-item"><img id="res-processed" src=""></div>
+                            <div class="visual-item"><img id="res-processed-long" src=""></div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <label class="block-title">NEURAL CONTOURING & EXTRACTION</label>
+                        <img id="res-contours" src="" style="width: 100%; border-radius: 12px;">
+                    </div>
+
+                    <div class="analysis-section">
+                        <label class="block-title">1D SIGNAL DISCRETIZATION (1-12 LEADS)</label>
+                        <div class="terminal-box" style="margin-top: 10px;">
+                            <pre id="res-signal-data">Awaiting discretization...</pre>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <label class="block-title">LATENT SPACE MAPPING (DIMENSIONALITY REDUCTION)</label>
+                        <div class="terminal-box" style="margin-top: 10px;">
+                            <pre id="res-dimensionality">Mapping latent features...</pre>
+                        </div>
+                    </div>
+
+
+                    <div id="digital-twin-bridge" class="prediction-box"
+                        style="background: rgba(59, 130, 246, 0.05); border-color: var(--primary); display: none;">
+                        <p style="color: #cbd5e1; font-size: 0.9rem;">High-fidelity signal generated. Sync with Neural
+                            Analysis Portal?</p>
+                        <button id="approve-digital-twin" class="action-trigger" style="margin-top: 10px;">🚀 INITIALIZE
+                            ADVANCED ANALYSIS</button>
+                    </div>
+
+                    <div id="advanced-analysis-section"
+                        style="display: none; margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+                            <div class="metric-card">
+                                <span class="metric-label">AVG BPM</span>
+                                <span id="adv-bpm" class="metric-value">--</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">R-PEAKS</span>
+                                <span id="adv-peaks" class="metric-value">--</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">HRV (ms)</span>
+                                <span id="adv-hrv" class="metric-value">--</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">SIGNAL LEN</span>
+                                <span id="adv-duration" class="metric-value">--</span>
+                            </div>
+                        </div>
+
+                        <div class="chart-container" style="margin-bottom: 20px;">
+                            <span class="chart-title">🟦 ECG NEURAL EXTRACTION (MASTER LEAD)</span>
+                            <canvas id="main-signal-trace"
+                                style="width: 100%; height: 300px; background: rgba(0,0,0,0.2); border-radius: 8px;"></canvas>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="chart-container">
+                                <span class="chart-title">⏱️ R-R TACHOGRAM</span>
+                                <canvas id="main-tachogram"
+                                    style="width: 100%; height: 250px; background: rgba(0,0,0,0.2); border-radius: 8px;"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <span class="chart-title">📊 R-R DISTRIBUTION</span>
+                                <canvas id="main-distribution"
+                                    style="width: 100%; height: 250px; background: rgba(0,0,0,0.2); border-radius: 8px;"></canvas>
+                            </div>
+                        </div>
+
+                        <button id="apply-to-simulation" class="action-trigger"
+                            style="background: var(--secondary); width: 100%;">🧬 COMMIT ANALYSED DYNAMICS TO
+                            ENGINE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="wait-screen" class="wait-overlay">
+        <div class="neural-scanner">
+            <div class="scan-ring ring-1"></div>
+            <div class="scan-ring ring-2"></div>
+            <div class="core-structure">
+                <div class="core-pulse"></div>
+            </div>
+            <div class="scanner-laser"></div>
+        </div>
+        <div
+            style="margin-top: 30px; font-weight: 800; color: var(--primary); letter-spacing: 0.2em; font-size: 0.7rem;">
+            INITIALIZING NEURAL BIODIGITAL ENGINE</div>
+    </div>
+
+    <!-- Legacy Hooks for Engine -->
+    <div style="display:none;">
+        <input id="analysisFrame" />
+        <div id="analysisMode"></div>
+        <div id="patient-cycle-img"></div>
+        <div id="patient-thickness-img"></div>
+        <div id="analysis-grid"></div>
+        <span id="anatomy-title"></span>
+        <span id="anatomy-description"></span>
+        <span id="anatomyName"></span>
+        <span id="partName"></span>
+        <span id="selectionText"></span>
+        <span id="regionName"></span>
+        <span id="labelText"></span>
+    </div>
+
+
+    <script type="module" crossorigin src="./assets/index-928b963b.js"></script>
+    <script src="./js/main.js" defer></script>
+</body>
+
+</html>

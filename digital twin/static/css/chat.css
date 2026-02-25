@@ -1,0 +1,210 @@
+/* 
+   NERUAL CHAT INTERFACE (ChatGPT Inspired + Ultra-Transparent)
+   - Round FAB & Buttons
+   - Clean Bubble Layout
+   - High Contrast Typography
+*/
+
+/* 1. Round Floating Action Portal */
+.chat-fab {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    width: 60px !important;
+    height: 60px !important;
+    background: var(--primary) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    /* Perfectly Round */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 10000 !important;
+    box-shadow: 0 4px 20px var(--glow) !important;
+    transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
+}
+
+.chat-fab:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 8px 30px var(--glow) !important;
+}
+
+.chat-fab svg {
+    stroke: #000 !important;
+    /* Dark icon on primary background */
+    width: 28px !important;
+    height: 28px !important;
+}
+
+/* 2. Modern Pop-up Window */
+.chat-window {
+    position: fixed !important;
+    bottom: 100px !important;
+    right: 30px !important;
+    width: 380px !important;
+    height: 600px !important;
+    background: rgba(13, 14, 18, 0.5) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    z-index: 9999 !important;
+    opacity: 0;
+    pointer-events: none !important;
+    transform: translateY(20px);
+    transition: 0.3s ease-out;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.chat-window.active {
+    opacity: 1;
+    pointer-events: all !important;
+    transform: translateY(0);
+}
+
+/* 3. Clean Header */
+.chat-header {
+    padding: 20px 24px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.chat-header span {
+    font-size: 1rem !important;
+    font-weight: 701 !important;
+    color: #fff !important;
+}
+
+/* 4. Action Pills */
+.chat-action-bar {
+    padding: 12px 20px !important;
+    display: flex !important;
+    gap: 8px !important;
+}
+
+.chat-sub-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 8px !important;
+    padding: 6px !important;
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: 0.2s !important;
+}
+
+.chat-sub-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 5. Chat Messages (ChatGPT Style) */
+.chat-messages {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+}
+
+.message {
+    padding: 12px 16px !important;
+    border-radius: 18px !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+    max-width: 85% !important;
+    word-wrap: break-word !important;
+}
+
+.message.bot {
+    align-self: flex-start !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ececec !important;
+    border-bottom-left-radius: 4px !important;
+}
+
+.message.user {
+    align-self: flex-end !important;
+    background: #343541 !important;
+    /* ChatGPT Dark style */
+    color: #fff !important;
+    border-bottom-right-radius: 4px !important;
+}
+
+/* 6. Round Interaction Area */
+.chat-input-area {
+    padding: 16px 20px !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 12px !important;
+    background: transparent !important;
+}
+
+.chat-input {
+    flex: 1 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: #fff !important;
+    font-size: 0.9rem !important;
+    max-height: 120px !important;
+    resize: none !important;
+    transition: 0.2s !important;
+}
+
+.chat-input:focus {
+    outline: none !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--primary) !important;
+}
+
+.chat-icon-btn,
+.chat-send-btn {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    /* Perfectly Round */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: 0.2s !important;
+}
+
+.chat-icon-btn {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.chat-icon-btn:hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.chat-send-btn {
+    background: var(--primary) !important;
+    color: #000 !important;
+    border: none !important;
+}
+
+.chat-send-btn:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 0 15px var(--glow) !important;
+}
+
+.chat-send-btn svg {
+    filter: brightness(0);
+}
+
+.chat-icon-btn.listening {
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-radius: 50% !important;
+}
