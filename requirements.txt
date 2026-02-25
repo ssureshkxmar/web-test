@@ -30,3 +30,5 @@ validators==0.18.2
 wfdb==4.1.2
 google-auth
 gunicorn==21.2.0
+flask==3.0.0
+werkzeug==3.0.0
