@@ -250,9 +250,24 @@
             font-size: 1.25rem;
             color: white;
             text-decoration: none;
-            margin-left: 20px;
+            margin-left: 10px;
             letter-spacing: -0.02em;
         }
+
+        @media (max-width: 768px) {
+            .nav-btn span {
+                display: none;
+            }
+
+            .navbar {
+                padding: 8px;
+            }
+
+            .navbar-container {
+                padding: 10px;
+            }
+        }
+
 
         .nav-box {
             display: flex;
