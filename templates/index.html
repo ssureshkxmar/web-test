@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartECG AI | AI-Powered Signal Extraction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleCredentialResponse(response) {
+            fetch('/login/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: response.credential })
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            });
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --accent: #10b981;
+            --bg-dark: #09090b;
+            --card-dark: #121217;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+        }
+
+        .navbar {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .hero {
+            padding: 180px 2rem 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            line-height: 1.1;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.04em;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .main-container {
+            max-width: 800px;
+            width: calc(100% - 40px);
+            margin: 0 auto 6rem;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        .upload-card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 32px;
+            padding: 4px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .upload-inner {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 4rem 2rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .upload-inner:hover {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.02);
+            transform: translateY(-2px);
+        }
+
+        .upload-icon-container {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .upload-inner:hover .upload-icon-container {
+            background: var(--primary);
+            box-shadow: 0 0 30px var(--primary-glow);
+            border-color: transparent;
+        }
+
+        .upload-icon-container svg {
+            width: 32px;
+            height: 32px;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .upload-inner:hover .upload-icon-container svg {
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .upload-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .upload-text p {
+            color: var(--text-muted);
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            margin-top: 2rem;
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px var(--primary-glow);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #27272a;
+            box-shadow: none;
+        }
+
+        #file-info {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            color: var(--accent);
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto 6rem;
+            padding: 0 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.02);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .feature-card h4 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .navbar-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 1000;
+            padding: 0 20px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(13, 13, 18, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 8px 12px;
+            width: 100%;
+            max-width: 1200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .nav-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-color);
+            margin: 0 4px;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Profile Dropdown */
+        .profile-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-profile-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-profile-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 240px;
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            padding: 8px;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+        }
+
+        .profile-dropdown.show {
+            display: flex;
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .dropdown-item i {
+            width: 16px;
+            font-size: 0.85rem;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 8px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-dark);
+            width: 90%;
+            max-width: 450px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-family: 'Outfit';
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            padding: 16px 24px 24px;
+            display: flex;
+            gap: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="/" class="logo" style="margin-left: 10px;">SMARTECG AI</a>
+                <div class="nav-divider" style="height: 30px;"></div>
+                <div class="nav-box">
+                    <a href="/analyze" class="nav-btn">
+                        <i class="fas fa-microscope"></i> Analyze
+                    </a>
+                    {% if session.get('user_email') %}
+                    <a href="/history" class="nav-btn">
+                        <i class="fas fa-history"></i> History
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                {% if session.get('user_email') %}
+                <div class="nav-box">
+                    <button onclick="openProfileSettings()" class="nav-btn" title="Settings">
+                        <i class="fas fa-user-cog"></i>
+                    </button>
+                    <div class="nav-divider"></div>
+                    <div style="display: flex; align-items: center; padding: 0 8px; gap: 10px;">
+                        <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">{{
+                            session.get('user_name', 'U')[0] | upper }}</div>
+                        <span
+                            style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); white-space: nowrap;">{{
+                            session.get('user_name', 'User') }}</span>
+                    </div>
+                </div>
+                <div class="nav-box">
+                    <a href="/logout" class="nav-btn danger" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+                {% else %}
+                <div class="nav-box" style="padding: 2px 8px;">
+                    <div id="g_id_onload"
+                        data-client_id="1001831003943-eqr8jof0hgto4ns1in822f8qgu8e74mp.apps.googleusercontent.com"
+                        data-callback="handleCredentialResponse" data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-size="medium"
+                        data-shape="pill" data-text="signin">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+    <!-- Profile Settings Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Account Settings</h2>
+                <i class="fas fa-times" onclick="closeProfileSettings()"
+                    style="cursor:pointer; color:var(--text-muted);"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>DISPLAY NAME</label>
+                    <input type="text" id="setting-name" value="{{ session.get('user_name', '') }}"
+                        placeholder="Enter display name">
+                </div>
+                <div class="form-group">
+                    <label>EMAIL ADDRESS</label>
+                    <input type="email" value="{{ session.get('user_email', '') }}" disabled
+                        style="opacity:0.6; cursor:not-allowed;">
+                </div>
+                <div class="form-group"
+                    style="padding:10px; background:rgba(99, 102, 241, 0.05); border-radius:12px; border:1px solid rgba(99, 102, 241, 0.1);">
+                    <p style="font-size:0.75rem; color:var(--text-muted);">Member since: <span
+                            style="color:var(--text-main);">Feb 2025</span></p>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">Storage usage: <span
+                            style="color:var(--text-main);">0.4 MB / 100 MB</span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeProfileSettings()" class="btn-outline"
+                    style="flex:1; padding:12px; border-radius:12px; border:1px solid var(--border-color); background:transparent; color:var(--text-main); font-weight:600; cursor:pointer;">Cancel</button>
+                <button onclick="saveProfileChanges()" class="btn-primary"
+                    style="flex:2; padding:12px; border-radius:12px; background:var(--primary); color:white; border:none; font-weight:700; cursor:pointer; box-shadow:0 5px 15px var(--primary-glow);">Update
+                    Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="hero">
+        <span class="badge">AI-Powered ECG Conversion</span>
+        <h1>From Paper to Signal <br>in Seconds.</h1>
+        <p>Digitize legacy medical records with the world's most accurate ECG extraction pipeline.</p>
+    </header>
+
+    <div class="main-container">
+        <div class="upload-card">
+            <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+                <div class="upload-inner" id="drop-zone">
+                    <div class="upload-icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                        </svg>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Upload ECG Image</h3>
+                        <p>Support for PNG, JPG and PDF scans</p>
+                    </div>
+                    <input type="file" name="image" class="file-input" id="file-input" accept="image/*" required>
+                </div>
+
+                <div class="upload-inner" id="drop-zone-refs" style="margin-top: 1.5rem; padding: 2rem 1rem;">
+                    <div class="upload-text" style="text-align: center;">
+                        <h4 style="margin-bottom: 0.5rem; font-weight: 600;">Optional: Upload Ground Truth Files
+                        </h4>
+                        <p style="font-size: 0.9rem;">Upload .hea and .mat files for Difference & SNR Plots</p>
+                    </div>
+                    <input type="file" name="ref_files" class="file-input" id="ref-files-input" accept=".hea,.mat,.dat"
+                        multiple>
+                </div>
+
+                <div id="file-info" style="flex-direction: column;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg style="width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        <span id="file-name-text"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submit-btn" disabled>
+                    <span id="btn-text">Extract Digital Data</span>
+                    <div class="loader" id="btn-loader"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 700;">How the Process Happens</h2>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">Our advanced AI extracts meaningful clinical data in 3
+            steps.</p>
+    </div>
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h4>1. Upload Image</h4>
+            <p>Upload a standard 12-lead ECG printed on a paper scan. The engine supports images, PDFs, or photos from
+                your camera.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+            </div>
+            <h4>2. Smart Extraction</h4>
+            <p>Our deep learning algorithm automatically separates grid lines from the pure medical signal and
+                reconstructs the data into 1D arrays.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+            <h4>3. AI Diagnosis & Analytics</h4>
+            <p>The system calculates heart rate, SNR, and uses a residual neural network to predict complex
+                cardiovascular pathologies natively.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 SmartECG AI. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const fileNameText = document.getElementById('file-name-text');
+        const submitBtn = document.getElementById('submit-btn');
+        const form = document.getElementById('upload-form');
+        const btnText = document.getElementById('btn-text');
+        const btnLoader = document.getElementById('btn-loader');
+        const dropZone = document.getElementById('drop-zone');
+
+        fileInput.addEventListener('change', (e) => {
+            updateFileInfo();
+        });
+
+        const refFilesInput = document.getElementById('ref-files-input');
+        refFilesInput.addEventListener('change', (e) => {
+            updateFileInfo();
+        });
+
+        function updateFileInfo() {
+            if (fileInput.files.length > 0) {
+                const name = fileInput.files[0].name;
+                fileNameText.textContent = `Image: ${name}`;
+                fileInfo.style.display = 'flex';
+                submitBtn.disabled = false;
+
+                // Clear old ref text if it exists
+                const oldRefText = document.getElementById('ref-files-text');
+                if (oldRefText) oldRefText.remove();
+
+                if (refFilesInput.files.length > 0) {
+                    const refNames = Array.from(refFilesInput.files).map(f => f.name).join(', ');
+                    const refFilesText = document.createElement('div');
+                    refFilesText.id = 'ref-files-text';
+                    refFilesText.textContent = `Refs: ${refNames}`;
+                    refFilesText.style.fontSize = '0.85rem';
+                    refFilesText.style.marginTop = '0.5rem';
+                    refFilesText.style.color = 'rgba(255, 255, 255, 0.7)';
+                    fileInfo.appendChild(refFilesText);
+                }
+            } else {
+                fileInfo.style.display = 'none';
+                submitBtn.disabled = true;
+            }
+        }
+
+        form.addEventListener('submit', () => {
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'block';
+            submitBtn.disabled = true;
+        });
+
+        // Simple Drag and Drop feedback
+        ['dragenter', 'dragover'].forEach(name => {
+            dropZone.addEventListener(name, () => dropZone.style.borderColor = 'var(--primary)', false);
+        });
+        ['dragleave', 'drop'].forEach(name => {
+            dropZone.addEventListener(name, () => dropZone.style.borderColor = '', false);
+        });
+
+        function openProfileSettings() {
+            document.getElementById('profileModal').classList.add('show');
+        }
+
+        function closeProfileSettings() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+
+        async function saveProfileChanges() {
+            const newName = document.getElementById('setting-name').value;
+            try {
+                const res = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    location.reload(); // Simplest to refresh for name updates in index
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                closeProfileSettings();
+            }
+        }
+    </script>
+</body>
+
+</html>

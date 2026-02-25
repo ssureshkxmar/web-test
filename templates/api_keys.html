@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Keys | SmartECG AI</title>
+    <meta name="description"
+        content="Generate and manage API keys to integrate SmartECG AI into your applications.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.3);
+            --bg-dark: #09090b;
+            --card-dark: #111116;
+            --card-lighter: #18181f;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 15% 25%, rgba(99, 102, 241, 0.12) 0%, transparent 55%),
+                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.08) 0%, transparent 55%);
+        }
+
+        /* ─── Navbar ─── */
+        .navbar {
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(14px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border-color);
+        }
+
+        /* ─── Page Layout ─── */
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem 6rem;
+        }
+
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* ─── Generate Key Card ─── */
+        .gen-card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .gen-card h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gen-card h2 svg {
+            color: var(--primary);
+        }
+
+        .gen-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-generate {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 20px -4px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-generate:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -4px var(--primary-glow);
+        }
+
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+
+        /* ─── New Key Banner ─── */
+        #new-key-banner {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 14px;
+        }
+
+        #new-key-banner .banner-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .key-display {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        #new-key-value {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #a7f3d0;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            background: transparent;
+            transition: all 0.2s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .copy-btn.copied {
+            border-color: #34d399;
+            color: #34d399;
+        }
+
+        .banner-warn {
+            margin-top: 0.75rem;
+            font-size: 0.82rem;
+            color: rgba(167, 243, 208, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ─── Keys Table ─── */
+        .keys-section h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .keys-section h2 svg {
+            color: var(--accent);
+        }
+
+        .keys-table-wrap {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        th {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .key-label {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .key-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: #818cf8;
+        }
+
+        .badge-requests {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .btn-delete {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 7px;
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            transition: all 0.2s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
+        }
+
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+
+        /* ─── Docs Card ─── */
+        .docs-card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .docs-card h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .docs-card h2 svg {
+            color: #fbbf24;
+        }
+
+        .endpoint {
+            margin-bottom: 1.5rem;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        .method-badge {
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .endpoint-url {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #c4b5fd;
+        }
+
+        .code-block {
+            background: #0d0d14;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: #94a3b8;
+            line-height: 1.8;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block .comment {
+            color: #4b5563;
+        }
+
+        .code-block .key-word {
+            color: #818cf8;
+        }
+
+        .code-block .string {
+            color: #86efac;
+        }
+
+        .code-block .value {
+            color: #fcd34d;
+        }
+
+        .copy-code-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            transition: all 0.2s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .copy-code-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+
+        .response-block {
+            margin-top: 1rem;
+            background: #0d0d14;
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: #6ee7b7;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        /* ─── Animations ─── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page {
+            animation: fadeUp 0.5s ease;
+        }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            background: var(--card-lighter);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-bg"></div>
+
+    <nav class="navbar">
+        <a href="/" class="logo">SMARTECG AI</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Upload</a>
+            <a href="/api-keys" class="nav-link active">API Keys</a>
+        </div>
+    </nav>
+
+    <main class="page">
+        <div class="page-header">
+            <h1>🔑 API Key Management</h1>
+            <p>Generate API keys to programmatically send ECG images and receive full analysis results in JSON.</p>
+        </div>
+
+        <!-- Generate Card -->
+        <div class="gen-card">
+            <h2>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+                </svg>
+                Generate New API Key
+            </h2>
+            <div class="gen-row">
+                <div class="form-group">
+                    <label for="key-label">Key Label (e.g., My App, Production)</label>
+                    <input type="text" id="key-label" placeholder="e.g. My ECG Dashboard" maxlength="60">
+                </div>
+                <button class="btn-generate" id="gen-btn" onclick="generateKey()">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+                        viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Generate Key
+                </button>
+            </div>
+
+            <div id="new-key-banner">
+                <div class="banner-label">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                        viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4" />
+                        <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Your New API Key
+                </div>
+                <div class="key-display">
+                    <div id="new-key-value">loading...</div>
+                    <button class="copy-btn" id="copy-btn" onclick="copyKey()">Copy</button>
+                </div>
+                <div class="banner-warn">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    </svg>
+                    Copy it now — you won't be able to see the full key again.
+                </div>
+            </div>
+        </div>
+
+        <!-- Keys Table -->
+        <div class="keys-section">
+            <h2>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Your API Keys
+            </h2>
+            <div class="keys-table-wrap" id="keys-table-wrap">
+                <div class="empty-state" id="empty-state">
+                    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    <p>No API keys yet. Generate your first one above.</p>
+                </div>
+                <table id="keys-table" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Key Preview</th>
+                            <th>Created</th>
+                            <th>Requests</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="keys-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Docs Card -->
+        <div class="docs-card">
+            <h2>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M9 12h6m-3-3v6m7 2H5a2 2 0 01-2-2V7a2 2 0 012-2h5l2 2h7a2 2 0 012 2v10a2 2 0 01-2 2z" />
+                </svg>
+                How to Use the API
+            </h2>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge">POST</span>
+                    <span class="endpoint-url">http://localhost:5001/api/digitize</span>
+                </div>
+                <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:0.75rem;">Send an ECG image and
+                    receive all extracted data as JSON.</p>
+
+                <div class="code-block" id="curl-block">
+                    <button class="copy-code-btn" onclick="copyCode('curl-block', this)">Copy</button>
+                    <span class="comment"># cURL Example</span>
+                    curl -X POST http://localhost:5001/api/digitize \
+                    -H <span class="string">"X-API-Key: YOUR_API_KEY_HERE"</span> \
+                    -F <span class="string">"image=@/path/to/ecg.png"</span>
+                </div>
+
+                <div class="code-block" style="margin-top:0.75rem;" id="python-block">
+                    <button class="copy-code-btn" onclick="copyCode('python-block', this)">Copy</button>
+                    <span class="comment"># Python Example</span>
+                    <span class="key-word">import</span> requests
+
+                    url = <span class="string">"http://localhost:5001/api/digitize"</span>
+                    headers = {<span class="string">"X-API-Key"</span>: <span class="string">"YOUR_API_KEY_HERE"</span>}
+                    files = {<span class="string">"image"</span>: open(<span class="string">"ecg.png"</span>, <span
+                        class="string">"rb"</span>)}
+
+                    response = requests.post(url, headers=headers, files=files)
+                    data = response.json()
+                    <span class="key-word">print</span>(data)
+                </div>
+
+                <div style="margin-top:0.75rem; font-size:0.85rem; color:var(--text-muted);">JSON Response:</div>
+                <div class="response-block">
+                    {
+                    <span style="color:#60a5fa">"success"</span>: <span style="color:#facc15">true</span>,
+                    <span style="color:#60a5fa">"heart_rate"</span>: <span style="color:#86efac">"72 BPM"</span>,
+                    <span style="color:#60a5fa">"snr"</span>: <span style="color:#86efac">"28.4 dB"</span>,
+                    <span style="color:#60a5fa">"cv_prediction"</span>: <span style="color:#86efac">"Normal Sinus
+                        Rhythm"</span>,
+                    <span style="color:#60a5fa">"output_image_url"</span>: <span
+                        style="color:#86efac">"http://localhost:5001/output/api_...png"</span>,
+                    <span style="color:#60a5fa">"timestamp"</span>: <span style="color:#facc15">1740384000</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentFullKey = '';
+
+        async function generateKey() {
+            const label = document.getElementById('key-label').value.trim() || 'Unnamed Key';
+            const btn = document.getElementById('gen-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                const res = await fetch('/api-keys/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ label })
+                });
+                const data = await res.json();
+                currentFullKey = data.key;
+                document.getElementById('new-key-value').textContent = data.key;
+                document.getElementById('new-key-banner').style.display = 'block';
+                document.getElementById('copy-btn').textContent = 'Copy';
+                document.getElementById('copy-btn').classList.remove('copied');
+                document.getElementById('key-label').value = '';
+                loadKeys();
+            } catch (e) {
+                showToast('Error generating key');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Generate Key`;
+            }
+        }
+
+        function copyKey() {
+            navigator.clipboard.writeText(currentFullKey).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                showToast('API key copied to clipboard!');
+            });
+        }
+
+        function copyCode(blockId, btn) {
+            const block = document.getElementById(blockId);
+            const text = block.innerText.replace('Copy\n', '').trim();
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+                showToast('Code copied!');
+            });
+        }
+
+        async function loadKeys() {
+            const res = await fetch('/api-keys/list');
+            const keys = await res.json();
+            const tbody = document.getElementById('keys-tbody');
+            const table = document.getElementById('keys-table');
+            const empty = document.getElementById('empty-state');
+
+            tbody.innerHTML = '';
+            if (keys.length === 0) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            table.style.display = 'table';
+            empty.style.display = 'none';
+
+            keys.forEach(k => {
+                const date = new Date(k.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="key-label">${escHtml(k.label)}</td>
+                    <td class="key-mono">${escHtml(k.key_preview)}</td>
+                    <td>${date}</td>
+                    <td><span class="badge-requests">${k.requests}</span></td>
+                    <td><button class="btn-delete" onclick="deleteKey('${escHtml(k.key_full)}', this)">Revoke</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteKey(key, btn) {
+            if (!confirm('Revoke this API key? Apps using it will lose access immediately.')) return;
+            btn.disabled = true;
+            btn.textContent = '...';
+            await fetch('/api-keys/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key })
+            });
+            showToast('API key revoked.');
+            loadKeys();
+        }
+
+        function escHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Allow pressing Enter to generate
+        document.getElementById('key-label').addEventListener('keydown', e => {
+            if (e.key === 'Enter') generateKey();
+        });
+
+        loadKeys();
+    </script>
+</body>
+
+</html>

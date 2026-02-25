@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results | SmartECG AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --accent: #10b981;
+            --bg-dark: #09090b;
+            --card-dark: #121217;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+        }
+
+        .navbar {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 3rem 2rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header-text h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-text p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.5rem 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 999px;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .main-result {
+            grid-column: span 12;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .comparison-source {
+            grid-column: span 6;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .card-body {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .card-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
+        }
+
+        .action-pane {
+            grid-column: span 12;
+            animation: fadeInUp 0.8s ease-out 0.5s both;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-box {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
+
+        .stat-box .label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1.25rem;
+            border-radius: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px var(--primary-glow);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+
+            .comparison-source,
+            .action-pane {
+                grid-column: span 12;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-bg"></div>
+
+    <nav class="navbar">
+        <a href="/" class="logo">SMARTECG AI</a>
+        <div class="status-badge">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="4" fill="currentColor"></circle>
+            </svg>
+            System Active
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <div class="header-text">
+                <h1>Analysis Complete</h1>
+                <p>Digital signal data successfully reconstructed from image source.</p>
+                {% if cv_prediction and cv_prediction != 'Not Detected' %}
+                <div
+                    style="margin-top: 1rem; padding: 1rem 1.5rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 0 12px 12px 0;">
+                    <span
+                        style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">AI
+                        Cardiovascular Diagnosis</span>
+                    <span
+                        style="color: #fca5a5; font-size: 1.25rem; font-weight: 600; font-family: 'Outfit', sans-serif;">{{
+                        cv_prediction }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div style="text-align: right;">
+                <div class="status-badge" style="margin-bottom: 0.5rem; display: inline-flex;">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    &nbsp;Extraction Successful
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <!-- Main Result Preview -->
+            <div class="card main-result">
+                <div class="card-header">
+                    <h3>Digitised Signals & Segmentation Masks</h3>
+                </div>
+                <div class="card-body">
+                    <img src="/output/{{ result_image }}?t={{ timestamp }}" alt="Reconstructed Signals">
+                </div>
+            </div>
+
+            <!-- Original Source -->
+            <div class="card comparison-source">
+                <div class="card-header">
+                    <h3>Original Source File</h3>
+                </div>
+                <div class="card-body">
+                    <img src="/data/{{ original_image }}?t={{ timestamp }}" alt="Original Image">
+                </div>
+            </div>
+
+            <!-- Signal Extraction Intermediate -->
+            <div class="card comparison-source" style="animation-delay: 0.5s;">
+                <div class="card-header">
+                    <h3>Signal Extraction Thresholding (AI Vision)</h3>
+                </div>
+                <div class="card-body" style="background: #ffffff;">
+                    <img src="/output/ink_mask.png?t={{ timestamp }}" alt="Processing / Not available">
+                </div>
+            </div>
+
+            <!-- Intermediate Diagnostic Pipelines -->
+            <div style="grid-column: span 12; margin-top: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-color);">Intermediate Pipeline Diagnostics</h3>
+
+                <details open
+                    style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <summary
+                        style="font-weight: 700; cursor: pointer; color: #111827 !important; font-family: 'Outfit'; list-style-position: inside;">
+                        GRAY
+                        SCALE IMAGE (Digitizer Source)</summary>
+                    <div style="margin-top: 1rem; overflow-x: auto;">
+                        <img src="/output/grayscale.png?t={{ timestamp }}" alt="Grayscale source not currently saved."
+                            style="max-width: 100%; border-radius: 4px;">
+                    </div>
+                </details>
+
+                <details open
+                    style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <summary
+                        style="font-weight: 700; cursor: pointer; color: #111827 !important; font-family: 'Outfit'; list-style-position: inside;">
+                        COMPUTER VISION MASKS (thresh, signal_ink, red_mask, dark_mask)</summary>
+                    <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">thresh.png</h4><img
+                                src="/output/thresh.png?t={{ timestamp }}" alt="thresh.png missing"
+                                style="width:100%; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">signal_ink.png</h4><img
+                                src="/output/signal_ink.png?t={{ timestamp }}" alt="signal_ink.png missing"
+                                style="width:100%; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">red_mask.png</h4><img
+                                src="/output/red_mask.png?t={{ timestamp }}" alt="red_mask.png missing"
+                                style="width:100%; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">dark_mask.png</h4><img
+                                src="/output/dark_mask.png?t={{ timestamp }}" alt="dark_mask.png missing"
+                                style="width:100%; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                    </div>
+                </details>
+
+                <details open
+                    style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <summary
+                        style="font-weight: 700; cursor: pointer; color: #111827 !important; font-family: 'Outfit'; list-style-position: inside;">
+                        DIVIDING LEADS</summary>
+                    <div
+                        style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                        <img src="/output/Leads_1-12_figure.png?t={{ timestamp }}" alt="Leads missing"
+                            style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                        <img src="/output/Long_Lead_13_figure.png?t={{ timestamp }}" alt="Long lead missing"
+                            style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </details>
+
+                <details open
+                    style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <summary
+                        style="font-weight: 700; cursor: pointer; color: #111827 !important; font-family: 'Outfit'; list-style-position: inside;">
+                        PREPROCESSED LEADS</summary>
+                    <div
+                        style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                        <img src="/output/Preprossed_Leads_1-12_figure.png?t={{ timestamp }}"
+                            alt="Preprocessed leads missing"
+                            style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                        <img src="/output/Preprossed_Leads_13_figure.png?t={{ timestamp }}"
+                            alt="Preprocessed long lead missing"
+                            style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </details>
+
+                <details open
+                    style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <summary
+                        style="font-weight: 700; cursor: pointer; color: #111827 !important; font-family: 'Outfit'; list-style-position: inside;">
+                        EXTRACTING SIGNALS(1-12) CONTOUR LEADS</summary>
+                    <div style="margin-top: 1rem; overflow-x: auto; text-align: center;">
+                        <img src="/output/Contour_Leads_1-12_figure.png?t={{ timestamp }}" alt="Contour leads missing"
+                            style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </details>
+
+                <details open
+                    style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <summary
+                        style="font-weight: 700; cursor: pointer; color: #111827 !important; font-family: 'Outfit'; list-style-position: inside;">
+                        CONVERTING TO 1D SIGNAL (1D Signals Preview)</summary>
+                    <div
+                        style="margin-top: 1rem; overflow-x: auto; font-family: Monaco, monospace; font-size: 0.8rem; border: 1px solid #eee; border-radius: 4px; padding: 0.5rem; color: #111827;">
+                        {% if signal1d_html %}
+                        {{ signal1d_html | safe }}
+                        {% else %}
+                        <p style="color: #6b7280; font-style: italic;">Processing output unavailable or still
+                            generating.</p>
+                        {% endif %}
+                    </div>
+                </details>
+
+                <details open
+                    style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <summary
+                        style="font-weight: 700; cursor: pointer; color: #111827 !important; font-family: 'Outfit'; list-style-position: inside;">
+                        PERFORM DIMENSIONALITY REDUCTION (PCA Matrix Preview)</summary>
+                    <div
+                        style="margin-top: 1rem; overflow-x: auto; font-family: Monaco, monospace; font-size: 0.8rem; border: 1px solid #eee; border-radius: 4px; padding: 0.5rem; color: #111827;">
+                        {% if pca_html %}
+                        {{ pca_html | safe }}
+                        {% else %}
+                        <p style="color: #6b7280; font-style: italic;">Processing output unavailable or still
+                            generating.</p>
+                        {% endif %}
+                    </div>
+                </details>
+            </div>
+
+            <!-- Stats & Actions -->
+            <div class="action-pane">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="label">Sampling Rate</div>
+                        <div class="value">500 Hz</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Est. Heart Rate</div>
+                        <div class="value" {% if hr_value and hr_value !='N/A' %}style="color: #ef4444;" {% endif %}>{{
+                            hr_value | default('N/A') }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Detected Leads</div>
+                        <div class="value">12 + Rhythm</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Estimated SNR</div>
+                        <div class="value" {% if snr_value and snr_value !='N/A' %}style="color: #10b981;" {% endif %}>
+                            {{ snr_value | default('N/A') }}</div>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <a href="/" class="btn btn-outline" style="flex: 0.5;">Upload New</a>
+                    <a href="/download_zip" class="btn btn-primary"
+                        style="background: #10b981; box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Digital Data (.zip)
+                    </a>
+                    <a href="/output/{{ result_image }}" download class="btn btn-primary">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                            </path>
+                        </svg>
+                        View Report
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Live ECG Machine Monitor -->
+            <div class="card"
+                style="grid-column: span 12; margin-top: 1rem; background: #000; border: 2px solid #1f2937; border-radius: 16px; overflow: hidden; position: relative;">
+                <div
+                    style="background: #111; padding: 0.5rem 1rem; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center;">
+                    <span
+                        style="color: #4ade80; font-family: 'Outfit'; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.05em;">ECG
+                        MONITOR [LIVE EXTRACT]</span>
+                    <div style="display: flex; gap: 8px;">
+                        <div
+                            style="width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 1s infinite;">
+                        </div>
+                        <span style="color: #4ade80; font-family: monospace; font-size: 0.8rem;">REAL-TIME
+                            RECONSTRUCTION</span>
+                    </div>
+                </div>
+
+                <div
+                    style="position: relative; height: 320px; background: radial-gradient(circle at 50% 50%, #0a110a 0%, #000 100%);">
+                    <!-- CRT Scanline Overlay -->
+                    <div
+                        style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02)); background-size: 100% 2px, 3px 100%; z-index: 10;">
+                    </div>
+
+                    <canvas id="ecgMachine" style="width: 100%; height: 100%;"></canvas>
+
+                    <!-- Floating Metrics on Monitor -->
+                    <div style="position: absolute; top: 20px; right: 20px; text-align: right; z-index: 20;">
+                        <div
+                            style="color: #4ade80; font-family: monospace; font-size: 2.5rem; font-weight: 700; line-height: 1;">
+                            <span id="live-hr">--</span><span style="font-size: 1rem;">BPM</span>
+                        </div>
+                        <div style="color: #4ade80; font-family: monospace; font-size: 0.8rem; opacity: 0.8;">SR: 500Hz
+                            | LEAD: II</div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="margin-top: 1rem; padding: 1.5rem; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <h4
+                        style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: #818cf8;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                        Share this Result via API
+                    </h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Generate a specific API key to fetch
+                        this exact result's JSON data in any other app.</p>
+                </div>
+
+                <div id="share-key-display"
+                    style="display: none; align-items: center; gap: 10px; background: rgba(0,0,0,0.5); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.5);">
+                    <span id="share-key-value"
+                        style="font-family: monospace; color: #34d399; font-size: 0.95rem; flex: 1;"></span>
+                    <button onclick="copyShareKey()" id="copy-share-btn"
+                        style="padding: 0.4rem 0.8rem; background: #10b981; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 0.8rem; font-weight: 600;">Copy</button>
+                </div>
+
+                <button id="gen-share-btn" onclick="generateShareKey()" class="btn btn-outline"
+                    style="border-color: rgba(99, 102, 241, 0.5); color: #818cf8; width: max-content; padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+                    Generate Sharing Key
+                </button>
+
+                <div id="share-docs" style="display: none; margin-top: 0.5rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Use it by calling: <code
+                            style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #a7f3d0;">GET http://localhost:5001/api/shared-result/YOUR_KEY</code></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        const RESULT_ID = "{{ result_id }}";
+        const HR_VALUE = "{{ hr_value }}";
+        const HAS_SIGNALS = "{{ 'yes' if has_signals else 'no' }}" === "yes";
+
+        // === ECG Machine Oscilloscope ===
+        async function initECGMachine() {
+            if (!HAS_SIGNALS) return;
+
+            let signalData;
+            try {
+                const res = await fetch('/output/signals.json?t={{ timestamp }}');
+                signalData = await res.json();
+            } catch (e) { console.error('ECG: load failed', e); return; }
+
+            const signal = signalData['II'] || Object.values(signalData)[0] || [];
+            if (signal.length === 0) return;
+
+            const canvas = document.getElementById('ecgMachine');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const hrDisplay = document.getElementById('live-hr');
+            if (hrDisplay) hrDisplay.textContent = HR_VALUE.replace(' BPM', '') || '--';
+
+            const dpr = window.devicePixelRatio || 1;
+            // Normalize signal to 0-1
+            const sMin = Math.min(...signal), sMax = Math.max(...signal);
+            const norm = signal.map(v => (v - sMin) / ((sMax - sMin) || 1));
+
+            // State
+            let yBuf = null, xPos = 0, sigIdx = 0;
+            const WIPE = 32;
+
+            function setupCanvas() {
+                // getBoundingClientRect is reliable even when offsetWidth may lag
+                const rect = canvas.getBoundingClientRect();
+                const w = Math.round(rect.width || canvas.parentElement.offsetWidth || 900);
+                const h = 320;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                canvas.style.height = h + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                yBuf = null; xPos = 0; // reset on resize
+            }
+            window.addEventListener('resize', setupCanvas);
+
+            function drawGrid(w, h) {
+                ctx.save();
+                // minor
+                ctx.strokeStyle = 'rgba(0,140,50,0.18)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                for (let gx = 0; gx < w; gx += 20) { ctx.moveTo(gx, 0); ctx.lineTo(gx, h); }
+                for (let gy = 0; gy < h; gy += 20) { ctx.moveTo(0, gy); ctx.lineTo(w, gy); }
+                ctx.stroke();
+                // major
+                ctx.strokeStyle = 'rgba(0,200,70,0.25)';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                for (let gx = 0; gx < w; gx += 100) { ctx.moveTo(gx, 0); ctx.lineTo(gx, h); }
+                for (let gy = 0; gy < h; gy += 80) { ctx.moveTo(0, gy); ctx.lineTo(w, gy); }
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function frame() {
+                const w = canvas.width / dpr;
+                const h = canvas.height / dpr;
+                if (!w || !h) { requestAnimationFrame(frame); return; }
+
+                const wp = Math.ceil(w);
+                // Lazy-init buffer with screen width
+                if (!yBuf || yBuf.length !== wp) {
+                    yBuf = new Float32Array(wp);
+                    yBuf.fill(h / 2);
+                    xPos = 0;
+                }
+
+                // Smoothly map signal points to canvas pixels
+                // Speed: traverse screen in roughly 4 seconds (at 60fps -> 240 frames -> w/240 pixels per frame)
+                const pxPerFrame = Math.max(1, w / 240);
+                const mg = h * 0.15, dh = h - 2 * mg;
+
+                // We advance the write head by pxPerFrame
+                const nextXPos = (xPos + pxPerFrame) % wp;
+
+                // Fill in the buffer between xPos and nextXPos (to cover jumps > 1px)
+                const startX = Math.floor(xPos);
+                const endX = Math.floor(nextXPos);
+
+                if (startX <= endX) {
+                    for (let x = startX; x <= endX; x++) {
+                        const v = norm[Math.floor(sigIdx) % norm.length];
+                        yBuf[x] = mg + (1 - v) * dh;
+                        sigIdx += norm.length / 800; // rate at which we consume signal points
+                    }
+                } else {
+                    for (let x = startX; x < wp; x++) {
+                        const v = norm[Math.floor(sigIdx) % norm.length];
+                        yBuf[x] = mg + (1 - v) * dh;
+                        sigIdx += norm.length / 800;
+                    }
+                    for (let x = 0; x <= endX; x++) {
+                        const v = norm[Math.floor(sigIdx) % norm.length];
+                        yBuf[x] = mg + (1 - v) * dh;
+                        sigIdx += norm.length / 800;
+                    }
+                }
+
+                xPos = nextXPos;
+
+                // Background
+                ctx.fillStyle = '#010e04';
+                ctx.fillRect(0, 0, w, h);
+                drawGrid(w, h);
+
+                // Wipe band ahead of write-head
+                const head = Math.floor(xPos);
+                ctx.fillStyle = '#010e04';
+                for (let i = 0; i < WIPE; i++) {
+                    const px = (head + i) % wp;
+                    ctx.fillRect(px, 0, 1, h);
+                }
+
+                // Draw signal in (up to) 2 segments for circular wrap
+                ctx.save();
+                // A subtle wider glow
+                ctx.strokeStyle = 'rgba(74, 222, 128, 0.4)';
+                ctx.lineWidth = 5;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+
+                const tail = (head + WIPE + 1) % wp; // start drawing from here
+
+                function strokeSegment(a, b) {
+                    if (b < a) return;
+                    ctx.beginPath();
+                    ctx.moveTo(a, yBuf[a]);
+                    for (let px = a + 1; px <= b; px++) ctx.lineTo(px, yBuf[px]);
+                    ctx.stroke();
+                }
+
+                // Draw glow
+                if (tail < head) {
+                    strokeSegment(tail, head);
+                } else {
+                    strokeSegment(tail, wp - 1);
+                    if (head > 0) strokeSegment(0, head);
+                }
+
+                // Draw core line
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 2.2;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#4ade80';
+
+                if (tail < head) {
+                    strokeSegment(tail, head);
+                } else {
+                    strokeSegment(tail, wp - 1);
+                    if (head > 0) strokeSegment(0, head);
+                }
+                ctx.shadowBlur = 0;
+                ctx.restore();
+
+                // Draw absolute Bright Head tracker point
+                ctx.beginPath();
+                ctx.arc(head, yBuf[head], 3.5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ffffff';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                requestAnimationFrame(frame);
+            }
+
+            // Defer canvas setup until after browser layout is complete
+            requestAnimationFrame(() => { setupCanvas(); frame(); });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', initECGMachine);
+
+        async function generateShareKey() {
+            if (!RESULT_ID || RESULT_ID === 'None') {
+                alert("Cannot generate key for this result.");
+                return;
+            }
+            const btn = document.getElementById('gen-share-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                const res = await fetch('/api/generate-result-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ history_id: RESULT_ID })
+                });
+                const data = await res.json();
+
+                document.getElementById('share-key-value').textContent = data.key;
+                document.getElementById('share-key-display').style.display = 'flex';
+                document.getElementById('share-docs').style.display = 'block';
+                btn.style.display = 'none';
+            } catch (e) {
+                alert('Error generating key.');
+                btn.disabled = false;
+                btn.textContent = 'Generate Sharing Key';
+            }
+        }
+
+        function copyShareKey() {
+            const key = document.getElementById('share-key-value').textContent;
+            navigator.clipboard.writeText(key).then(() => {
+                const btn = document.getElementById('copy-share-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

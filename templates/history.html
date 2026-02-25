@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My History | SmartECG AI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg-dark: #09090b;
+            --card-dark: #121217;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .navbar-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 1000;
+            padding: 0 20px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(13, 13, 18, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 8px 12px;
+            width: 100%;
+            max-width: 1200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .nav-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-color);
+            margin: 0 4px;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        h1 {
+            font-family: 'Outfit';
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .card-img {
+            height: 160px;
+            background: #000;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .date {
+            font-size: 0.8rem;
+            color: #818cf8;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric {
+            font-size: 0.9rem;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            margin-top: auto;
+            padding: 0.75rem;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-decoration: none;
+            transition: 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Profile Dropdown (Shared Styles) */
+        .profile-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-profile-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            margin-top: 10px;
+            right: 0;
+            width: 240px;
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            padding: 8px;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+        }
+
+        .profile-dropdown.show {
+            display: flex;
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-dark);
+            width: 90%;
+            max-width: 450px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .modal-footer {
+            padding: 16px 24px 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            flex: 2;
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-outline {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .danger {
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="/" class="logo" style="margin-left: 10px;">SMARTECG AI</a>
+                <div class="nav-box">
+                    <a href="/" class="nav-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="nav-box">
+                    <a href="/analyze" class="nav-btn">
+                        <i class="fas fa-microscope"></i> Analyze
+                    </a>
+                    {% if session.get('user_email') %}
+                    <a href="/history" class="nav-btn active">
+                        <i class="fas fa-history"></i> History
+                    </a>
+                    {% endif %}
+                </div>
+
+                {% if session.get('user_email') %}
+                <div class="nav-box">
+                    <button onclick="openProfileSettings()" class="nav-btn" title="Settings">
+                        <i class="fas fa-user-cog"></i>
+                    </button>
+                    <div class="nav-divider"></div>
+                    <div style="display: flex; align-items: center; padding: 0 8px; gap: 10px;">
+                        <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">{{
+                            session.get('user_name', 'U')[0] | upper }}</div>
+                        <span
+                            style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); white-space: nowrap;">{{
+                            session.get('user_name', 'User') }}</span>
+                    </div>
+                </div>
+                <div class="nav-box">
+                    <a href="/logout" class="nav-btn danger" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+    <!-- Profile Settings Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Account Settings</h2>
+                <i class="fas fa-times" onclick="closeProfileSettings()"
+                    style="cursor:pointer; color:var(--text-muted);"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>DISPLAY NAME</label>
+                    <input type="text" id="setting-name" value="{{ session.get('user_name', '') }}"
+                        placeholder="Enter display name">
+                </div>
+                <!-- Add More Features link as requested -->
+                <div
+                    style="margin-top: 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
+                    <p style="font-size: 0.8rem; color: #818cf8; font-weight: 600; cursor: pointer;"><i
+                            class="fas fa-chart-line"></i> View Advanced Usage Analytics</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;"><i
+                            class="fas fa-shield-alt"></i> Security & Authentication Keys</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeProfileSettings()" class="btn-outline">Cancel</button>
+                <button onclick="saveProfileChanges()" class="btn-primary">Update Profile</button>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 120px;">
+        <h1>Analysis History</h1>
+        {% if records %}
+        <div class="grid">
+            {% for r in records %}
+            <div class="card">
+                <div class="card-img">
+                    <img src="/output/{{ r.result_image }}?t={{ r.timestamp }}" alt="ECG Result">
+                </div>
+                <div class="card-content">
+                    <!-- Convert timestamp to date via script ideally, but here just use raw or simple tag -->
+                    <div class="date">Recorded {{ r.timestamp }}</div>
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">HR</div>{{ r.hr }}
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">SNR</div>{{ r.snr }}
+                        </div>
+                        <div class="metric" style="grid-column: span 2;">
+                            <div class="metric-label">Diagnosis</div>{{ r.cv_prediction }}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: auto;">
+                        <button onclick="deleteRecord('{{ r.id }}', this)" class="btn-delete" title="Delete record"><i
+                                class="fas fa-trash"></i></button>
+                        <button onclick="openAnalysis('{{ r.id }}')" class="btn"
+                            style="flex: 2; background: var(--primary); border-color: var(--primary);">Full
+                            Report</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted);">No past analysis results found.</p>
+        {% endif %}
+    </div>
+    <script>
+        // formatting timestamps client-side nicely
+        document.querySelectorAll('.date').forEach(el => {
+            const ts = parseInt(el.textContent.replace('Recorded ', ''));
+            if (!isNaN(ts)) {
+                el.textContent = new Date(ts * 1000).toLocaleString();
+            }
+        });
+
+        async function openAnalysis(historyId) {
+            try {
+                const res = await fetch('/api/generate-result-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ history_id: historyId })
+                });
+                const data = await res.json();
+                if (data.key) {
+                    window.location.href = `/analyze?key=${data.key}`;
+                }
+            } catch (e) {
+                alert('Error opening analysis');
+            }
+        }
+
+        async function deleteRecord(id, btn) {
+            if (!confirm('Are you sure you want to delete this historical record? This action cannot be undone.')) return;
+            try {
+                const res = await fetch(`/api/history/delete/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    btn.closest('.card').remove();
+                }
+            } catch (e) { alert('Failed to delete record'); }
+        }
+
+        // Profile Menu Logic (Shared)
+        function toggleProfileDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('show');
+        }
+        function openProfileSettings() {
+            document.getElementById('profileModal').classList.add('show');
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+        function closeProfileSettings() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+        async function saveProfileChanges() {
+            const newName = document.getElementById('setting-name').value;
+            try {
+                const res = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('nav-username').innerText = data.name;
+                    document.getElementById('nav-avatar').innerText = data.name[0].toUpperCase();
+                    closeProfileSettings();
+                }
+            } catch (e) { console.error(e); }
+        }
+        window.onclick = function (event) {
+            if (!event.target.closest('.profile-container')) {
+                if (document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('show');
+            }
+            if (event.target.classList.contains('modal')) {
+                closeProfileSettings();
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</body>
+
+</html>
