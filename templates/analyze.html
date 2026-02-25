@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyze Your Heart | SmartECG AI</title>
+    <title>Analyze Your Heart | Clinical AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -18,12 +18,12 @@
             --primary: #6366f1;
             --primary-glow: rgba(99, 102, 241, 0.4);
             --accent: #10b981;
-            --bg-dark: #09090b;
-            --card-dark: #121217;
+            --bg-dark: #0d1117;
+            --card-dark: #161b22;
             --surface2: #1c1c24;
             --text-main: #fafafa;
             --text-muted: #a1a1aa;
-            --border-color: rgba(255, 255, 255, 0.08);
+            --border-color: rgba(255, 255, 255, 0.1);
             --danger: #ef4444;
             --ecg-grid: rgba(99, 102, 241, 0.05);
             --ecg-grid-bold: rgba(99, 102, 241, 0.12);
@@ -43,17 +43,6 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-        }
-
-        .ambient-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
         }
 
         .navbar-container {
@@ -520,12 +509,25 @@
 
         .modal-content {
             background: var(--card-dark);
-            width: 90%;
-            max-width: 450px;
-            border-radius: 24px;
-            border: 1px solid var(--border-color);
+            width: 95%;
+            max-width: 480px;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
         }
 
         .modal-header {
@@ -589,6 +591,34 @@
             font-weight: 600;
             cursor: pointer;
         }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            z-index: -1;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 50% 100%, rgba(121, 40, 202, 0.3) 0%, rgba(121, 40, 202, 0) 50%),
+                radial-gradient(circle at 30% 90%, rgba(204, 51, 153, 0.2) 0%, rgba(204, 51, 102, 0) 40%);
+            animation: github-glow 8s ease-in-out infinite alternate;
+            filter: blur(80px);
+            pointer-events: none;
+        }
+
+        @keyframes github-glow {
+            0% {
+                transform: translateY(10%) scale(1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translateY(-5%) scale(1.1);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
@@ -597,9 +627,10 @@
 
     <div class="navbar-container">
         <nav class="navbar">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="/" class="logo" style="margin-left: 10px;">SMARTECG AI</a>
-                <div class="nav-divider" style="height: 30px;"></div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="nav-box" style="padding: 6px 16px;">
+                    <a href="/" class="logo">Clinical AI</a>
+                </div>
                 <div class="nav-box">
                     <a href="/" class="nav-btn">
                         <i class="fas fa-arrow-left"></i> Back
@@ -623,21 +654,20 @@
                 </div>
 
                 {% if session.get('user_email') %}
-                <div class="nav-box">
-                    <button onclick="openProfileSettings()" class="nav-btn" title="Settings">
-                        <i class="fas fa-user-cog"></i>
-                    </button>
-                    <div class="nav-divider"></div>
-                    <div style="display: flex; align-items: center; padding: 0 8px; gap: 10px;">
-                        <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">{{
+                <div class="nav-box" style="margin-right: 10px;">
+                    <div class="nav-divider" style="margin-left: -4px; opacity: 0.3;"></div>
+                    <div style="display: flex; align-items: center; padding: 0 8px; gap: 12px; cursor: pointer;"
+                        onclick="openProfileSettings()">
+                        <div id="nav-avatar" class="user-avatar"
+                            style="width: 32px; height: 32px; font-size: 0.85rem; background: var(--primary); border: 2px solid rgba(255,255,255,0.1);">
+                            {{
                             session.get('user_name', 'U')[0] | upper }}</div>
-                        <span
-                            style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); white-space: nowrap;">{{
+                        <span id="nav-username"
+                            style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); white-space: nowrap;">{{
                             session.get('user_name', 'User') }}</span>
                     </div>
-                </div>
-                <div class="nav-box">
-                    <a href="/logout" class="nav-btn danger" title="Logout">
+                    <div class="nav-divider" style="opacity: 0.3;"></div>
+                    <a href="/logout" class="nav-btn danger" style="padding: 8px 12px;" title="Logout">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>
@@ -650,9 +680,10 @@
     <div class="modal" id="profileModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Account Settings</h2>
-                <i class="fas fa-times" onclick="closeProfileSettings()"
-                    style="cursor:pointer; color:var(--text-muted);"></i>
+                <h2 style="font-family:'Outfit'; font-weight:700; font-size:1.25rem;">Account Settings</h2>
+                <div onclick="closeProfileSettings()" style="cursor:pointer; color:var(--text-muted); padding: 5px;">
+                    <i class="fas fa-times fa-lg"></i>
+                </div>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -660,13 +691,51 @@
                     <input type="text" id="setting-name" value="{{ session.get('user_name', '') }}"
                         placeholder="Enter display name">
                 </div>
-                <!-- Add More Features link as requested -->
+                <div class="form-group">
+                    <label>EMAIL ADDRESS</label>
+                    <div
+                        style="padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.9rem; color: var(--text-muted); font-family: 'JetBrains Mono';">
+                        {{ session.get('user_email', 'Not available') }}
+                    </div>
+                </div>
+
                 <div
-                    style="margin-top: 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
-                    <p style="font-size: 0.8rem; color: #818cf8; font-weight: 600; cursor: pointer;"><i
-                            class="fas fa-chart-line"></i> View Advanced Usage Analytics</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;"><i
-                            class="fas fa-shield-alt"></i> Security & Authentication Keys</p>
+                    style="padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
+                    <div
+                        style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px;">
+                        <span style="color: var(--text-main);">Storage Usage</span>
+                        <span>0.4 MB / 100 MB</span>
+                    </div>
+                    <div
+                        style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
+                        <div
+                            style="width: 0.4%; height: 100%; background: linear-gradient(to right, var(--primary), #818cf8); box-shadow: 0 0 10px var(--primary-glow);">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Member since: Feb
+                            2025</span>
+                        <span
+                            style="font-size: 0.7rem; padding: 4px 8px; background: rgba(16, 185, 129, 0.1); color: var(--accent); border-radius: 6px; font-weight: 700;">ACTIVE
+                            PLAN</span>
+                    </div>
+                </div>
+
+                <!-- Feature Shortcuts -->
+                <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s;"
+                        onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+                        onmouseout="this.style.background='transparent'">
+                        <i class="fas fa-chart-line" style="color: #818cf8; margin-bottom: 8px; display: block;"></i>
+                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-main);">USAGE DATA</span>
+                    </div>
+                    <div style="padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s;"
+                        onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+                        onmouseout="this.style.background='transparent'">
+                        <i class="fas fa-shield-alt"
+                            style="color: var(--accent); margin-bottom: 8px; display: block;"></i>
+                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-main);">SECURITY</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -731,8 +800,8 @@
                 </div>
 
                 <div class="tabs">
-                    <div class="tab active" onclick="switchTab('signal')">SIGNAL ANALYTICS</div>
-                    <div class="tab" onclick="switchTab('biomech')">BIOMECHANICS</div>
+                    <div class="tab active" id="tab-btn-signal" onclick="switchTab('signal')">SIGNAL ANALYTICS</div>
+                    <div class="tab" id="tab-btn-biomech" onclick="switchTab('biomech')">BIOMECHANICS</div>
                     <div class="tab" id="tab-btn-twin" onclick="switchTab('twin')">DIGITAL TWIN</div>
                 </div>
 
@@ -832,36 +901,34 @@
         let charts = {};
         let lastLoadedData = null;
 
-        function switchTab(tabId) {
+        function switchTab(tabId, event) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
 
-            // Specific handling for twin tab
-            if (tabId === 'twin') {
-                const btn = document.getElementById('tab-btn-twin');
-                if (btn) btn.classList.add('active');
-                const content = document.getElementById('tab-twin');
-                if (content) content.classList.remove('hidden');
+            const btn = document.getElementById('tab-btn-' + tabId);
+            if (btn) btn.classList.add('active');
 
+            const content = document.getElementById('tab-' + tabId);
+            if (content) content.classList.remove('hidden');
+
+            if (tabId === 'twin') {
                 const iframe = document.getElementById('twin-iframe');
                 if (iframe) {
                     if (!iframe.src) {
                         iframe.src = iframe.getAttribute('data-src');
                     }
-                    // Trigger resize after animation/tab switch
                     setTimeout(() => {
                         try {
                             iframe.contentWindow.dispatchEvent(new Event('resize'));
                         } catch (e) { }
                     }, 300);
                 }
-            } else {
-                event.target.classList.add('active');
-                document.getElementById('tab-' + tabId).classList.remove('hidden');
-            }
-
-            if (tabId === 'biomech' && lastLoadedData && lastLoadedData.contours) {
-                setTimeout(() => drawContours(lastLoadedData.contours), 50);
+            } else if (tabId === 'biomech') {
+                if (charts['volumeChart']) charts['volumeChart'].update();
+                if (charts['compareChart']) charts['compareChart'].update();
+                if (lastLoadedData && lastLoadedData.contours) {
+                    setTimeout(() => drawContours(lastLoadedData.contours), 50);
+                }
             }
         }
 
@@ -966,20 +1033,18 @@
                 { k: 'LVM', l: 'LV Mass', u: 'g' }, { k: 'RVEDV', l: 'RV EDV', u: 'ml' }, { k: 'RVEF', l: 'RV EF', u: '%' }
             ];
 
-
             let html = '';
             cfg.forEach(c => {
                 html += `<div class="stat-card">
-                    <div class="stat-label">${c.l}</div>
-                    <div class="stat-value">${m[c.k] || '—'}<span style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-left:5px;">${c.u}</span></div>
-                </div>`;
+                <div class="stat-label">${c.l}</div>
+                <div class="stat-value">${m[c.k] || '—'}<span style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-left:5px;">${c.u}</span></div>
+            </div>`;
             });
             document.getElementById('metricsRow').innerHTML = html;
 
             if (data.ecg_analysis && data.ecg_analysis.data) {
                 const dat = data.ecg_analysis.data;
 
-                // 1. ECG Signal Chart
                 if (dat.signal_1d) {
                     C('ecg1dChart', 'line', {
                         labels: dat.signal_1d.map((_, i) => i),
@@ -1004,7 +1069,6 @@
                     });
                 }
 
-                // 2. Tachogram
                 if (dat.rr_tachogram) {
                     C('tachogramChart', 'scatter', {
                         datasets: [{
@@ -1025,7 +1089,6 @@
                     });
                 }
 
-                // 3. RR Distribution
                 if (dat.rr_distribution) {
                     const bins = {};
                     dat.rr_distribution.forEach(v => {
@@ -1049,7 +1112,6 @@
                     });
                 }
 
-                // 4. Master Lead
                 if (dat.master_lead) {
                     C('masterLeadChart', 'line', {
                         labels: dat.master_lead.map((_, i) => i),
@@ -1057,7 +1119,6 @@
                     }, { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } });
                 }
 
-                // 5. Latent Space (PCA)
                 if (dat.reduced_data) {
                     C('ecgPcaChart', 'bar', {
                         labels: ['C1', 'C2', 'C3', 'C4', 'C5', 'C6'],
@@ -1069,7 +1130,6 @@
                 }
             }
 
-            // Biomechanics Tab Charts
             const rvef = m.RVEF || 55;
             C('volumeChart', 'doughnut', {
                 labels: ['ESV', 'SV'],
@@ -1110,7 +1170,6 @@
                     line: { width: 3, color: cols[name] || '#fff' },
                     marker: { size: 0 }
                 });
-
             });
 
             if (datasets.length === 0) {
@@ -1164,21 +1223,28 @@
                 }
             } catch (e) { console.error(e); }
         }
+
         window.onclick = function (event) {
-            if (!event.target.closest('.profile-container')) {
-                if (document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('show');
+            if (event.target.closest && !event.target.closest('.profile-container')) {
+                const dropdown = document.getElementById('profileDropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('show');
+                }
             }
             if (event.target.classList.contains('modal')) {
                 closeProfileSettings();
             }
-        }
+        };
 
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             const key = params.get('key');
             if (key) {
-                document.getElementById('api_key_input').value = key;
-                runAnalysis();
+                const input = document.getElementById('api_key_input');
+                if (input) {
+                    input.value = key;
+                    runAnalysis();
+                }
             }
         };
     </script>

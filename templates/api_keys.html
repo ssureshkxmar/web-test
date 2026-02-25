@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Keys | SmartECG AI</title>
-    <meta name="description"
-        content="Generate and manage API keys to integrate SmartECG AI into your applications.">
+    <title>API Keys | Clinical AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="description" content="Generate and manage API keys to integrate Clinical AI into your applications.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -20,12 +20,12 @@
             --accent-glow: rgba(16, 185, 129, 0.3);
             --danger: #ef4444;
             --danger-glow: rgba(239, 68, 68, 0.3);
-            --bg-dark: #09090b;
-            --card-dark: #111116;
+            --bg-dark: #0d1117;
+            --card-dark: #161b22;
             --card-lighter: #18181f;
             --text-main: #fafafa;
             --text-muted: #a1a1aa;
-            --border-color: rgba(255, 255, 255, 0.08);
+            --border-color: rgba(255, 255, 255, 0.1);
             --border-hover: rgba(255, 255, 255, 0.15);
         }
 
@@ -42,15 +42,6 @@
             background: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
-        }
-
-        .ambient-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background:
-                radial-gradient(circle at 15% 25%, rgba(99, 102, 241, 0.12) 0%, transparent 55%),
-                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.08) 0%, transparent 55%);
         }
 
         /* ─── Navbar ─── */
@@ -550,6 +541,34 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            z-index: -1;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 50% 100%, rgba(121, 40, 202, 0.3) 0%, rgba(121, 40, 202, 0) 50%),
+                radial-gradient(circle at 30% 90%, rgba(204, 51, 153, 0.2) 0%, rgba(204, 51, 102, 0) 40%);
+            animation: github-glow 8s ease-in-out infinite alternate;
+            filter: blur(80px);
+            pointer-events: none;
+        }
+
+        @keyframes github-glow {
+            0% {
+                transform: translateY(10%) scale(1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translateY(-5%) scale(1.1);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
@@ -557,7 +576,7 @@
     <div class="ambient-bg"></div>
 
     <nav class="navbar">
-        <a href="/" class="logo">SMARTECG AI</a>
+        <a href="/" class="logo">Clinical AI</a>
         <div class="nav-links">
             <a href="/" class="nav-link">Upload</a>
             <a href="/api-keys" class="nav-link active">API Keys</a>
@@ -759,57 +778,72 @@
         }
 
         async function loadKeys() {
-            const res = await fetch('/api-keys/list');
-            const keys = await res.json();
-            const tbody = document.getElementById('keys-tbody');
-            const table = document.getElementById('keys-table');
-            const empty = document.getElementById('empty-state');
+            try {
+                const res = await fetch('/api-keys/list');
+                const keys = await res.json();
+                const tbody = document.getElementById('keys-tbody');
+                const table = document.getElementById('keys-table');
+                const empty = document.getElementById('empty-state');
 
-            tbody.innerHTML = '';
-            if (keys.length === 0) {
-                table.style.display = 'none';
-                empty.style.display = 'block';
-                return;
+                tbody.innerHTML = '';
+                if (!keys || keys.length === 0) {
+                    table.style.display = 'none';
+                    empty.style.display = 'block';
+                    return;
+                }
+                table.style.display = 'table';
+                empty.style.display = 'none';
+
+                keys.forEach(k => {
+                    const date = new Date(k.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="key-label">${escHtml(k.label)}</td>
+                        <td class="key-mono">${escHtml(k.key_preview)}</td>
+                        <td>${date}</td>
+                        <td><span class="badge-requests">${k.requests}</span></td>
+                        <td><button class="btn-delete" onclick="deleteKey('${escHtml(k.key_full)}', this)">Revoke</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error('Failed to load keys', e);
             }
-            table.style.display = 'table';
-            empty.style.display = 'none';
-
-            keys.forEach(k => {
-                const date = new Date(k.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="key-label">${escHtml(k.label)}</td>
-                    <td class="key-mono">${escHtml(k.key_preview)}</td>
-                    <td>${date}</td>
-                    <td><span class="badge-requests">${k.requests}</span></td>
-                    <td><button class="btn-delete" onclick="deleteKey('${escHtml(k.key_full)}', this)">Revoke</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
         }
 
-        async function deleteKey(key, btn) {
-            if (!confirm('Revoke this API key? Apps using it will lose access immediately.')) return;
-            btn.disabled = true;
-            btn.textContent = '...';
-            await fetch('/api-keys/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ key })
-            });
-            showToast('API key revoked.');
-            loadKeys();
-        }
+        async function deleteKey(keyFull, btn) {
+            if (!confirm('Are you sure you want to revoke this API key? This will immediately break any integrations using it.')) return;
 
-        function escHtml(str) {
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            try {
+                const res = await fetch('/api-keys/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: keyFull })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Key revoked successfully');
+                    loadKeys();
+                }
+            } catch (e) {
+                showToast('Error revoking key');
+            }
         }
 
         function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
 
         // Allow pressing Enter to generate
@@ -817,6 +851,7 @@
             if (e.key === 'Enter') generateKey();
         });
 
+        // Initialize
         loadKeys();
     </script>
 </body>

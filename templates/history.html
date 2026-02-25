@@ -4,18 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My History | SmartECG AI</title>
+    <title>My History | Clinical AI</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
         :root {
             --primary: #6366f1;
-            --bg-dark: #09090b;
-            --card-dark: #121217;
+            --bg-dark: #0d1117;
+            --card-dark: #161b22;
             --text-main: #fafafa;
             --text-muted: #a1a1aa;
-            --border-color: rgba(255, 255, 255, 0.08);
+            --border-color: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -408,6 +408,34 @@
         .danger {
             color: #ef4444;
         }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            z-index: -1;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 50% 100%, rgba(121, 40, 202, 0.3) 0%, rgba(121, 40, 202, 0) 50%),
+                radial-gradient(circle at 30% 90%, rgba(204, 51, 153, 0.2) 0%, rgba(204, 51, 102, 0) 40%);
+            animation: github-glow 8s ease-in-out infinite alternate;
+            filter: blur(80px);
+            pointer-events: none;
+        }
+
+        @keyframes github-glow {
+            0% {
+                transform: translateY(10%) scale(1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translateY(-5%) scale(1.1);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
@@ -415,7 +443,7 @@
     <div class="navbar-container">
         <nav class="navbar">
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="/" class="logo" style="margin-left: 10px;">SMARTECG AI</a>
+                <a href="/" class="logo" style="margin-left: 10px;">Clinical AI</a>
                 <div class="nav-box">
                     <a href="/" class="nav-btn">
                         <i class="fas fa-arrow-left"></i> Back
@@ -559,7 +587,9 @@
                 if (data.success) {
                     btn.closest('.card').remove();
                 }
-            } catch (e) { alert('Failed to delete record'); }
+            } catch (e) {
+                alert('Failed to delete record');
+            }
         }
 
         // Profile Menu Logic (Shared)
@@ -583,20 +613,29 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    document.getElementById('nav-username').innerText = data.name;
-                    document.getElementById('nav-avatar').innerText = data.name[0].toUpperCase();
+                    const navUsername = document.getElementById('nav-username');
+                    const navAvatar = document.getElementById('nav-avatar');
+                    if (navUsername) navUsername.innerText = data.name;
+                    if (navAvatar) navAvatar.innerText = data.name[0].toUpperCase();
                     closeProfileSettings();
+                    location.reload();
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
+
         window.onclick = function (event) {
-            if (!event.target.closest('.profile-container')) {
-                if (document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('show');
+            if (event.target.closest && !event.target.closest('.profile-container')) {
+                const dropdown = document.getElementById('profileDropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('show');
+                }
             }
             if (event.target.classList.contains('modal')) {
                 closeProfileSettings();
             }
-        }
+        };
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </body>
