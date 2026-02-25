@@ -619,6 +619,83 @@
                 opacity: 1;
             }
         }
+
+        /* ─── Comprehensive Mobile Responsiveness for Analyzer ─── */
+        @media (max-width: 768px) {
+
+            .nav-btn span,
+            .nav-username {
+                display: none;
+            }
+
+            .navbar {
+                padding: 8px;
+            }
+
+            .navbar-container {
+                padding: 10px;
+            }
+
+            .workspace {
+                flex-direction: column;
+                margin: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                box-shadow: none;
+            }
+
+            .viewport {
+                padding: 15px;
+            }
+
+            .header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .modern-panel {
+                border-radius: 12px;
+            }
+
+            .ecg-grid,
+            .contour-box {
+                height: 250px;
+            }
+
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-btn {
+                flex: 1;
+                font-size: 0.75rem;
+                padding: 10px;
+            }
+
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                max-width: 100%;
+                border-radius: 0;
+                border: none;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-body {
+                flex-grow: 1;
+                overflow-y: auto;
+            }
+
+            .modal-footer {
+                padding-bottom: 40px;
+            }
+        }
     </style>
 </head>
 
