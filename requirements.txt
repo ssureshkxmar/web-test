@@ -28,4 +28,4 @@ torchvision>=0.17.0
 tqdm==4.66.1
 validators==0.18.2
 wfdb==4.1.2
-google-auth
+google-authgunicorn==21.2.0
