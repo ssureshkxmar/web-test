@@ -46,13 +46,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(13, 13, 18, 0.7);
+            background: rgba(10, 10, 15, 0.4);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            border-radius: 100px;
             padding: 8px 12px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1000px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
@@ -61,14 +61,14 @@
             align-items: center;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 100px;
             padding: 4px;
             gap: 4px;
         }
 
         .nav-btn {
             padding: 0.5rem 1rem;
-            border-radius: 8px;
+            border-radius: 100px;
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-muted);
@@ -108,12 +108,10 @@
         .logo {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
-            font-size: 1.5rem;
-            background: linear-gradient(to right, #818cf8, #34d399);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
+            font-size: 1.25rem;
+            color: white;
             text-decoration: none;
+            letter-spacing: -0.02em;
         }
 
         .container {
@@ -442,8 +440,9 @@
 <body>
     <div class="navbar-container">
         <nav class="navbar">
-            <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
                 <a href="/" class="logo" style="margin-left: 10px;">Clinical AI</a>
+                <div class="nav-divider" style="height: 30px; margin: 0 10px;"></div>
                 <div class="nav-box">
                     <a href="/" class="nav-btn">
                         <i class="fas fa-arrow-left"></i> Back

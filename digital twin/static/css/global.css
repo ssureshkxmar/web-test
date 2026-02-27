@@ -56,13 +56,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(13, 13, 18, 0.7);
+    background: rgba(10, 10, 15, 0.4);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
+    border-radius: 100px;
     padding: 8px 12px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1000px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -71,14 +71,14 @@ body {
     align-items: center;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 100px;
     padding: 4px;
     gap: 4px;
 }
 
 .nav-btn {
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 100px;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-muted);
@@ -118,11 +118,8 @@ body {
 .logo {
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
-    font-size: 1.2rem;
-    background: linear-gradient(to right, #818cf8, #34d399);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 1.25rem;
+    color: white;
     letter-spacing: -0.02em;
     text-decoration: none;
 }
@@ -1425,4 +1422,77 @@ td {
     color: rgba(255, 255, 255, 0.3);
     margin-bottom: 12px;
     letter-spacing: 0.05em;
+}
+/* Floating 3D Annotations */
+.anatomical-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: fade-in 0.4s ease-out backwards;
+}
+
+.marker-dot-wrapper {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--marker-color, #ef4444);
+    box-shadow: 0 0 10px var(--marker-color, #ef4444);
+    z-index: 2;
+}
+
+.marker-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--marker-color, #ef4444);
+    opacity: 0.4;
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    z-index: 1;
+}
+
+.marker-label {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    white-space: nowrap;
+    transition: transform 0.2s;
+}
+
+.marker-label .pct {
+    font-weight: 800;
+    color: var(--marker-color, #ef4444);
+    margin-right: 4px;
+}
+
+@keyframes ping {
+    75%, 100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+@keyframes fade-in {
+    from { opacity: 0; transform: translate(-50%, -40%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
 }

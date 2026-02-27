@@ -18,26 +18,22 @@
             --primary: #6366f1;
             --primary-glow: rgba(99, 102, 241, 0.4);
             --accent: #10b981;
-            --bg-dark: #0d1117;
-            --card-dark: #161b22;
-            --surface2: #1c1c24;
-            --text-main: #fafafa;
-            --text-muted: #a1a1aa;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --danger: #ef4444;
-            --ecg-grid: rgba(99, 102, 241, 0.05);
-            --ecg-grid-bold: rgba(99, 102, 241, 0.12);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --bg-dark: #07070a;
+            --card-dark: rgba(15, 15, 20, 0.7);
+            --surface: rgba(255, 255, 255, 0.03);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --danger: #f43f5e;
+            --highlight: #00F0FF;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
             color: var(--text-main);
             height: 100vh;
             overflow: hidden;
@@ -45,29 +41,85 @@
             flex-direction: column;
         }
 
-        .navbar-container {
-            position: fixed;
-            top: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            z-index: 1000;
-            padding: 0 20px;
-        }
-
         .navbar {
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(13, 13, 18, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 8px 12px;
+            padding: 8px 24px;
             width: 100%;
             max-width: 1200px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            margin: 0 auto;
+            border-radius: 100px;
+        }
+
+        .navbar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 20px;
+            background: linear-gradient(to bottom, rgba(7, 7, 10, 0.8), transparent);
+        }
+
+        .sidebar {
+            background: rgba(15, 15, 20, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .card {
+            background: var(--card-dark);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab {
+            font-family: 'Outfit';
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .ai-explanation-box {
+            margin-top: 10px;
+            padding: 12px;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            border-left: 2px solid var(--primary);
+        }
+
+        /* Ambient Animations */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 5px var(--primary-glow);
+            }
+
+            50% {
+                box-shadow: 0 0 20px var(--primary-glow);
+            }
+
+            100% {
+                box-shadow: 0 0 5px var(--primary-glow);
+            }
+        }
+
+        .active-glow {
+            animation: pulse-glow 3s infinite;
         }
 
         .nav-box {
@@ -75,14 +127,14 @@
             align-items: center;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 100px;
             padding: 4px;
             gap: 4px;
         }
 
         .nav-btn {
             padding: 0.5rem 1rem;
-            border-radius: 8px;
+            border-radius: 100px;
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-muted);
@@ -122,24 +174,26 @@
         .logo {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
-            font-size: 1.5rem;
-            background: linear-gradient(to right, #818cf8, #34d399);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.25rem;
+            color: white;
             text-decoration: none;
+            letter-spacing: -0.02em;
         }
 
         .workspace {
             display: flex;
             flex: 1;
             overflow: hidden;
+            margin-top: 100px;
         }
 
         .sidebar {
             width: 320px;
-            background: var(--card-dark);
-            border-right: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            margin: 0 0 20px 20px;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -406,6 +460,24 @@
             height: 100% !important;
         }
 
+        #tab-twin.pseudo-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+        }
+
+        #tab-twin.pseudo-fullscreen #fullscreen-twin-btn {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         /* Profile Dropdown (Shared Styles) */
         .profile-container {
             position: relative;
@@ -633,7 +705,15 @@
             }
 
             .navbar-container {
-                padding: 10px;
+                padding: 5px;
+                position: relative;
+            }
+
+            .navbar {
+                border-radius: 12px;
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
             }
 
             .workspace {
@@ -705,9 +785,8 @@
     <div class="navbar-container">
         <nav class="navbar">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="nav-box" style="padding: 6px 16px;">
-                    <a href="/" class="logo">Clinical AI</a>
-                </div>
+                <a href="/" class="logo" style="margin-left: 10px;">Clinical AI</a>
+                <div class="nav-divider" style="height: 30px; margin: 0 10px;"></div>
                 <div class="nav-box">
                     <a href="/" class="nav-btn">
                         <i class="fas fa-arrow-left"></i> Back
@@ -719,9 +798,6 @@
                 <div class="nav-box">
                     <a href="/analyze" class="nav-btn active">
                         <i class="fas fa-microscope"></i> Analyze
-                    </a>
-                    <a href="/digital-twin" class="nav-btn">
-                        <i class="fas fa-clone"></i> Digital Twin
                     </a>
                     {% if session.get('user_email') %}
                     <a href="/history" class="nav-btn">
@@ -879,7 +955,8 @@
                 <div class="tabs">
                     <div class="tab active" id="tab-btn-signal" onclick="switchTab('signal')">SIGNAL ANALYTICS</div>
                     <div class="tab" id="tab-btn-biomech" onclick="switchTab('biomech')">BIOMECHANICS</div>
-                    <div class="tab" id="tab-btn-twin" onclick="switchTab('twin')">DIGITAL TWIN</div>
+                    <div class="tab" id="tab-btn-lausm" onclick="switchTab('lausm')">2D</div>
+                    <div class="tab" id="tab-btn-twin" onclick="switchTab('twin')">3D</div>
                 </div>
 
                 <div id="tab-signal" class="tab-content">
@@ -942,6 +1019,13 @@
                 </div>
 
                 <div id="tab-biomech" class="tab-content hidden">
+                    <div id="biomechExpertExplanation"
+                        style="margin:20px 0; padding:20px; background:rgba(255,255,255,0.03); border-radius:12px; border-left:4px solid var(--accent); font-size:0.9rem; line-height:1.6; color:var(--text-muted);">
+                        <h4 style="color:var(--text-main); margin-bottom:10px; font-family:'Outfit';">AI BIOMECHANICAL
+                            INTERPRETATION</h4>
+                        <p id="biomechExplanationText">Analyzing anatomical mechanics...</p>
+                    </div>
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="card">
                             <div class="card-header">
@@ -965,8 +1049,165 @@
                     </div>
                 </div>
 
+                <div id="tab-lausm" class="tab-content hidden">
+                    <div class="diagnosis-alert"
+                        style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: #10b981; margin-bottom: 25px;">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                        <span>LAUSM ATRIAL MAPPING COMPLETE</span>
+                    </div>
+
+                    <div id="lausmExpertExplanation"
+                        style="margin-bottom:25px; padding:20px; background:rgba(255,255,255,0.03); border-radius:12px; border-left:4px solid #10b981; font-size:0.9rem; line-height:1.6; color:var(--text-muted);">
+                        <h4 style="color:var(--text-main); margin-bottom:10px; font-family:'Outfit';">AI HEMODYNAMIC
+                            FINDINGS</h4>
+                        <p id="lausmExplanationText">Generating hemodynamic summary...</p>
+                    </div>
+
+                    <div style="margin-bottom: 30px;">
+                        <h3
+                            style="font-family:'Outfit'; font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; color: var(--text-main); border-left: 4px solid #818cf8; padding-left: 15px; display: flex; align-items: center; gap: 10px;">
+                            STEP 1: 3D SCALAR VISUALIZATION
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Geometrically
+                            standardized 3D atrium models with computed clinical scalar fields.</p>
+
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;"
+                            id="lausm-3d-grid">
+                            <div class="card">
+                                <div class="card-header" style="padding: 10px 15px;">
+                                    <div class="card-title" style="font-size: 0.8rem;"><i class="fas fa-heart"
+                                            style="color: #ef4444;"></i> TEST BV</div>
+                                </div>
+                                <img id="lausm-bv-3d" src="" style="width:100%; border-radius: 8px; background: #000;">
+                                <div class="ai-explanation-box" id="ai-lausm-bv-3d">Awaiting clinical analysis...</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header" style="padding: 10px 15px;">
+                                    <div class="card-title" style="font-size: 0.8rem;"><i class="fas fa-clock"
+                                            style="color: #818cf8;"></i> TEST AGE</div>
+                                </div>
+                                <img id="lausm-age-3d" src="" style="width:100%; border-radius: 8px; background: #000;">
+                                <div class="ai-explanation-box" id="ai-lausm-age-3d">Awaiting clinical analysis...</div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header" style="padding: 10px 15px;">
+                                    <div class="card-title" style="font-size: 0.8rem;"><i class="fas fa-water"
+                                            style="color: #00d1ff;"></i> TEST TAWSS</div>
+                                </div>
+                                <img id="lausm-tawss-3d" src=""
+                                    style="width:100%; border-radius: 8px; background: #000;">
+                                <div class="ai-explanation-box" id="ai-lausm-tawss-3d">Awaiting clinical analysis...
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header" style="padding: 10px 15px;">
+                                    <div class="card-title" style="font-size: 0.8rem;"><i class="fas fa-braille"
+                                            style="color: #10b981;"></i> TEST FIBR</div>
+                                </div>
+                                <img id="lausm-fibr-3d" src=""
+                                    style="width:100%; border-radius: 8px; background: #000;">
+                                <div class="ai-explanation-box" id="ai-lausm-fibr-3d">Awaiting clinical analysis...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3
+                            style="font-family:'Outfit'; font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; color: var(--text-main); border-left: 4px solid #10b981; padding-left: 15px; display: flex; align-items: center; gap: 10px;">
+                            STEP 2: UNFOLDED 2D MAPS (LAUSM)
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Standardized
+                            flattened atrium maps for clinical region-by-region quantification.</p>
+
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;"
+                            id="lausm-2d-grid">
+                            <div class="card">
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">TAWSS DISK MEAN</div>
+                                    </div>
+                                    <img id="lausm-tawss-mean" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;"
+                                        id="ai-lausm-tawss-mean">Awaiting analysis...</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">BV DISK</div>
+                                    </div>
+                                    <img id="lausm-bv-disk" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;" id="ai-lausm-bv-disk">
+                                        Awaiting analysis...</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">FIBR DISK</div>
+                                    </div>
+                                    <img id="lausm-fibr-disk" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;" id="ai-lausm-fibr-disk">
+                                        Awaiting analysis...</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">AGE DISK MEAN</div>
+                                    </div>
+                                    <img id="lausm-age-mean" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;" id="ai-lausm-age-mean">
+                                        Awaiting analysis...</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">TAWSS DISK</div>
+                                    </div>
+                                    <img id="lausm-tawss-disk" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;"
+                                        id="ai-lausm-tawss-disk">Awaiting analysis...</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">FIBR DISK MEAN</div>
+                                    </div>
+                                    <img id="lausm-fibr-mean" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;" id="ai-lausm-fibr-mean">
+                                        Awaiting analysis...</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">BV DISK MEAN</div>
+                                    </div>
+                                    <img id="lausm-bv-mean" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;" id="ai-lausm-bv-mean">
+                                        Awaiting analysis...</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" style="padding: 8px 12px;">
+                                        <div class="card-title" style="font-size: 0.65rem;">AGE DISK</div>
+                                    </div>
+                                    <img id="lausm-age-disk" src=""
+                                        style="width:100%; border-radius: 4px; background: #000;">
+                                    <div class="ai-explanation-box" style="font-size: 0.55rem;" id="ai-lausm-age-disk">
+                                        Awaiting analysis...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="tab-twin" class="tab-content hidden"
-                    style="height: calc(100vh - 200px); padding: 0; background: #000; border-radius: 24px; overflow: hidden; border: 1px solid var(--border-color);">
+                    style="position: relative; height: calc(100vh - 200px); padding: 0; background: #000; border-radius: 24px; overflow: hidden; border: 1px solid var(--border-color);">
+
+                    <button id="fullscreen-twin-btn"
+                        style="position: absolute; top: 15px; right: 15px; z-index: 1000; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px);"
+                        onclick="toggleTwinFullscreen()">
+                        <i class="fas fa-expand"></i> <span>Full Screen</span>
+                    </button>
                     <iframe id="twin-iframe" data-src="/digital-twin/"
                         style="width: 100%; height: 100%; border: none;"></iframe>
                 </div>
@@ -977,6 +1218,22 @@
     <script>
         let charts = {};
         let lastLoadedData = null;
+
+        function toggleTwinFullscreen() {
+            const container = document.getElementById('tab-twin');
+            const btnSpan = document.querySelector('#fullscreen-twin-btn span');
+            const btnIcon = document.querySelector('#fullscreen-twin-btn i');
+
+            container.classList.toggle('pseudo-fullscreen');
+
+            if (container.classList.contains('pseudo-fullscreen')) {
+                if (btnSpan) btnSpan.textContent = 'Exit Full Screen';
+                if (btnIcon) btnIcon.className = 'fas fa-compress';
+            } else {
+                if (btnSpan) btnSpan.textContent = 'Full Screen';
+                if (btnIcon) btnIcon.className = 'fas fa-expand';
+            }
+        }
 
         function switchTab(tabId, event) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1127,7 +1384,7 @@
                         labels: dat.signal_1d.map((_, i) => i),
                         datasets: [{
                             data: dat.signal_1d,
-                            borderColor: '#818cf8',
+                            borderColor: '#ef4444',
                             borderWidth: 2,
                             pointRadius: 0,
                             tension: 0.4,
@@ -1150,8 +1407,8 @@
                     C('tachogramChart', 'scatter', {
                         datasets: [{
                             data: dat.rr_tachogram.map((v, i) => ({ x: i, y: v })),
-                            borderColor: '#34d399',
-                            backgroundColor: '#34d399',
+                            borderColor: '#f59e0b',
+                            backgroundColor: '#f59e0b',
                             showLine: true,
                             borderWidth: 1.5,
                             pointRadius: 2.5,
@@ -1198,11 +1455,11 @@
 
                 if (dat.reduced_data) {
                     C('ecgPcaChart', 'bar', {
-                        labels: ['C1', 'C2', 'C3', 'C4', 'C5', 'C6'],
-                        datasets: [{ data: dat.reduced_data.slice(0, 6), backgroundColor: '#6366f1', borderRadius: 4 }]
+                        labels: dat.reduced_data.map((_, i) => `C${i}`),
+                        datasets: [{ data: dat.reduced_data, backgroundColor: '#00d2ff', borderRadius: 4 }]
                     }, {
                         plugins: { legend: { display: false } },
-                        scales: { x: { ticks: { color: '#a1a1aa', font: { size: 10 } } }, y: { display: false } }
+                        scales: { x: { ticks: { color: '#a1a1aa', font: { size: 8 }, maxTicksLimit: 20 } }, y: { display: false } }
                     });
                 }
             }
@@ -1210,14 +1467,14 @@
             const rvef = m.RVEF || 55;
             C('volumeChart', 'doughnut', {
                 labels: ['ESV', 'SV'],
-                datasets: [{ data: [m.ESV || 60, m.SV || 80], backgroundColor: ['#ef4444', '#6366f1'], borderColor: 'transparent' }]
+                datasets: [{ data: [m.ESV || 60, m.SV || 80], backgroundColor: ['#ef4444', '#00d2ff'], borderColor: 'transparent' }]
             }, { cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#a1a1aa', font: { family: 'Outfit' } } } } });
 
             C('compareChart', 'bar', {
                 labels: ['EDV (ml)', 'ESV (ml)', 'EF (%)', 'SV (ml)'],
                 datasets: [
-                    { label: 'Left Ventricle', data: [m.EDV || 140, m.ESV || 60, m.EF || 60, m.SV || 80], backgroundColor: '#6366f1', borderRadius: 4 },
-                    { label: 'Right Ventricle', data: [m.RVEDV || 130, (m.RVEDV || 130) * (1 - rvef / 100), rvef, (m.RVEDV || 130) * (rvef / 100)], backgroundColor: '#10b981', borderRadius: 4 }
+                    { label: 'Left Ventricle', data: [m.EDV || 140, m.ESV || 60, m.EF || 60, m.SV || 80], backgroundColor: '#ef4444', borderRadius: 4 },
+                    { label: 'Right Ventricle', data: [m.RVEDV || 130, (m.RVEDV || 130) * (1 - rvef / 100), rvef, (m.RVEDV || 130) * (rvef / 100)], backgroundColor: '#00d2ff', borderRadius: 4 }
                 ]
             }, {
                 plugins: { legend: { labels: { color: '#a1a1aa', font: { family: 'Outfit' } } } },
@@ -1225,6 +1482,74 @@
             });
 
             if (data.contours) drawContours(data.contours);
+
+            // Populate LAUSM if available
+            if (data.lausm_results) {
+                const lr = data.lausm_results;
+                const mapping = {
+                    'lausm-bv-3d': lr.bv_3d,
+                    'lausm-age-3d': lr.age_3d,
+                    'lausm-tawss-3d': lr.tawss_3d,
+                    'lausm-fibr-3d': lr.fibr_3d,
+                    'lausm-tawss-mean': lr.tawss_mean,
+                    'lausm-bv-disk': lr.bv_disk,
+                    'lausm-fibr-disk': lr.fibr_disk,
+                    'lausm-age-mean': lr.age_mean,
+                    'lausm-tawss-disk': lr.tawss_disk,
+                    'lausm-fibr-mean': lr.fibr_mean,
+                    'lausm-bv-mean': lr.bv_mean,
+                    'lausm-age-disk': lr.age_disk
+                };
+                for (const [id, url] of Object.entries(mapping)) {
+                    const img = document.getElementById(id);
+                    if (img && url) img.src = url + "?t=" + Date.now();
+                }
+
+                // Update finding text
+                if (data.lausm_finding) {
+                    appendLog('Updating clinical findings...', 'blue');
+                }
+
+                if (data.explanations) {
+                    const ex = data.explanations;
+                    const formatAI = (txt) => {
+                        if (!txt) return '';
+                        return txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            .replace(/\n/g, '<br>');
+                    };
+                    if (ex.signal) document.getElementById('explanationText').innerHTML = formatAI(ex.signal);
+                    if (ex.biomech) document.getElementById('biomechExplanationText').innerHTML = formatAI(ex.biomech);
+                    if (ex.lausm) document.getElementById('lausmExplanationText').innerHTML = formatAI(ex.lausm);
+
+                    // Detailed LAUSM sub-interpretations
+                    if (ex.lausm_details) {
+                        for (const [id, txt] of Object.entries(ex.lausm_details)) {
+                            const box = document.getElementById('ai-' + id);
+                            if (box) box.innerHTML = formatAI(txt);
+                        }
+                    }
+                }
+
+                // Digital Twin - Highlight ONLY affected parts from LAUSM analysis
+                const iframe = document.getElementById('twin-iframe');
+                if (iframe && data.lausm_results && data.lausm_results._affected_parts) {
+                    const ap = data.lausm_results._affected_parts;
+                    setTimeout(() => {
+                        try {
+                            iframe.contentWindow.postMessage({
+                                type: 'highlight_affected',
+                                affected_parts: ap.affected_parts || [],
+                                severity: ap.severity || {},
+                                labels: ap.labels || {},
+                                mode: 'full'   // start in Full mode
+                            }, '*');
+                        } catch (e) {
+                            console.warn("Digital Twin postMessage error:", e);
+                        }
+                    }, 3000); // Wait 3s for twin to fully load
+                }
+            }
         }
 
         function drawContours(cont) {
@@ -1232,7 +1557,7 @@
             if (!el) return;
 
             const datasets = [];
-            const cols = { LVEndo: '#ef4444', LVEpi: '#6366f1', RVEndo: '#10b981' };
+            const cols = { LVEndo: '#ef4444', LVEpi: '#00d2ff', RVEndo: '#10b981' };
 
             Object.entries(cont).forEach(([name, data]) => {
                 if (!data.x || data.x.length === 0) return;
@@ -1277,9 +1602,23 @@
         function toggleProfileDropdown() {
             document.getElementById('profileDropdown').classList.toggle('show');
         }
-        function openProfileSettings() {
+        async function openProfileSettings() {
             document.getElementById('profileModal').classList.add('show');
-            document.getElementById('profileDropdown').classList.remove('show');
+            if (document.getElementById('profileDropdown')) document.getElementById('profileDropdown').classList.remove('show');
+
+            try {
+                const res = await fetch('/api/user/stats');
+                const stats = await res.json();
+                const storageLabel = document.querySelector('.modal-body span[style*="Storage Usage"]');
+                const storageProgress = document.querySelector('.modal-body div[style*="linear-gradient"]');
+                const memberSince = document.querySelector('.modal-body span[style*="Member since"]');
+                const activePlan = document.querySelector('.modal-body span[style*="ACTIVE PLAN"]');
+
+                if (storageLabel) storageLabel.nextElementSibling.innerText = stats.storage_usage;
+                if (storageProgress) storageProgress.style.width = stats.storage_percent + '%';
+                if (memberSince) memberSince.innerText = 'Member since: ' + stats.member_since;
+                if (activePlan) activePlan.innerText = stats.plan + ' PLAN';
+            } catch (e) { console.warn("Failed to fetch user stats", e); }
         }
         function closeProfileSettings() {
             document.getElementById('profileModal').classList.remove('show');
@@ -1325,6 +1664,8 @@
             }
         };
     </script>
+
+    {% include "cardio_chat_widget.html" %}
 </body>
 
 </html>

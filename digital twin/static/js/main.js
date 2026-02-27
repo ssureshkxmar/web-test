@@ -1096,6 +1096,14 @@ function setupHeartViewerMode() {
 
         switch (mode) {
             case 'solid':
+                // RESET ALL LAYERS TO FULL VISIBILITY
+                Object.keys(TISSUE_MAP).forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.value = 1.0;
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
                 applyOpacity(1);
                 break;
             case 'wire':
@@ -1177,23 +1185,39 @@ function init() {
     setupAnatomicalExplorer();
 }
 
+// Detailed clinical impact notes: explains HOW each part is affected
 const CLINICAL_NOTES = {
-    'la': 'Receives oxygenated blood from lungs. Critical for filling left ventricle.',
-    'ra': 'Receives deoxygenated blood. Origin of cardiac electrical impulse.',
-    'lv': 'Primary pump for systemic circulation. Most muscular chamber.',
-    'rv': 'Pumps deoxygenated blood to lungs for gas exchange.',
-    'Largevessels': 'Main conduit for oxygenated blood leaving the heart.',
-    'Smallvessels': 'Network responsible for localized tissue perfusion.',
-    'SVenaCava': 'Primary return route for deoxygenated blood from upper body.',
-    'IVenaCava': 'Primary return route for deoxygenated blood from lower body.',
-    'Pulmonaryvessels': 'Transports blood between heart and lungs.',
-    'Heartmuscles': 'Specialized cardiac tissue capable of autonomous contraction.',
-    'sanvan': 'Electrical conduction system governing heart rhythm.',
-    'internal': 'Fibrous skeleton and structural lattice of the heart.',
-    'bicuspid': 'Prevents backflow into left atrium during systole.',
-    'tricuspid': 'Regulates flow between right atrium and ventricle.',
-    'valves': 'Semi-lunar interfaces for pulmonary and aortic outflows.'
+    'la': 'Posterior wall shows elevated hemodynamic stress. Dilation risk detected — reduced compliance may impair ventricular filling and promote stasis, increasing thromboembolic risk.',
+    'ra': 'Atrial remodeling detected near SA node region. Altered electrical conduction may predispose to arrhythmogenic foci and impaired sinus rhythm generation.',
+    'lv': 'Myocardial strain indicates reduced ejection fraction potential. Wall motion abnormality suggests ischemic insult — systolic dysfunction risk elevated.',
+    'rv': 'Right ventricular outflow tract shows pressure overload markers. Elevated pulmonary resistance may cause progressive dilation and tricuspid regurgitation.',
+    'Largevessels': 'Aortic arch exhibits elevated wall shear stress (TAWSS). Endothelial damage risk elevated — potential atherogenic zone with plaque formation susceptibility.',
+    'Smallvessels': 'Micro-vessel network shows TAWSS stress concentrations. Capillary perfusion deficit identified — localized tissue ischemia may develop in affected territories.',
+    'SVenaCava': 'Superior vena cava shows flow turbulence at junction. Altered venous return dynamics may indicate right-sided pressure elevation.',
+    'IVenaCava': 'Inferior vena cava diameter variability detected. Reduced compliance suggests elevated right atrial pressure and possible fluid overload.',
+    'Pulmonaryvessels': 'Pulmonary vasculature shows resistance elevation. Flow impedance may indicate early pulmonary hypertension — right heart workload increased.',
+    'Heartmuscles': 'Myocardial tissue shows fibrosis markers (image-derived). Scar tissue reduces contractile function and may serve as substrate for re-entrant arrhythmias.',
+    'sanvan': 'Conduction pathway delay detected. AV node remodeling may impair synchronization between atrial and ventricular contractions.',
+    'internal': 'Structural lattice shows calcification markers. Increased stiffness may impair diastolic relaxation and elevate filling pressures.',
+    'bicuspid': 'Mitral valve leaflet shows thickening. Possible stenosis or prolapse — regurgitant jet may cause left atrial volume overload.',
+    'tricuspid': 'Tricuspid annular dilation detected. Incomplete leaflet coaptation may result in regurgitation and atrial volume overload.',
+    'valves': 'Semilunar valve apparatus shows calcific deposits. Narrowed orifice area restricts outflow — pressure gradient across valve elevated.'
 };
+
+// Severity icon based on percentage
+function _getSeverityIcon(sev) {
+    if (sev >= 0.85) return '🔴';
+    if (sev >= 0.65) return '🟠';
+    if (sev >= 0.45) return '🟡';
+    return '🟢';
+}
+
+function _getSeverityLabel(sev) {
+    if (sev >= 0.85) return 'CRITICAL';
+    if (sev >= 0.65) return 'HIGH';
+    if (sev >= 0.45) return 'MODERATE';
+    return 'LOW';
+}
 
 function setupAnatomicalExplorer() {
     const list = document.getElementById('parts-explorer-list');
@@ -1203,79 +1227,392 @@ function setupAnatomicalExplorer() {
     const closeBtn = document.getElementById('close-details-btn');
     const separateBtn = document.getElementById('mode-separate');
     const fullBtn = document.getElementById('mode-full');
+    if (!list) return;
 
-    let selectedId = null;
+    // ── Initial state: show a waiting placeholder ──
+    _showWaitingState();
 
-    const updateUIState = (mode) => {
-        separateBtn.classList.toggle('active', mode === 'separate');
-        fullBtn.classList.toggle('active', mode === 'full');
-    };
+    // Check if data already arrived before we were ready
+    if (LAUSM_AFFECTED_PARTS && LAUSM_AFFECTED_PARTS.parts) {
+        const d = LAUSM_AFFECTED_PARTS;
+        setTimeout(() => window._explorerSetAffected(d.parts, d.severity, d.labels || {}), 100);
+    }
 
-    const applyMode = (partId, mode) => {
-        Object.keys(TISSUE_MAP).forEach(id => {
-            if (mode === 'separate') {
-                // Separate: Only the specific part is visible (0% others)
-                setTissueVisibility(id, (id === partId) ? 1.0 : 0.0);
-            } else if (mode === 'full') {
-                // Full: Specific part 100%, others less than 20% (15%)
-                setTissueVisibility(id, (id === partId) ? 1.0 : 0.15);
-            } else {
-                setTissueVisibility(id, 1.0); // Reset
-            }
-        });
-    };
+    function _showWaitingState() {
+        list.innerHTML = `
+            <div style="padding:20px 12px; text-align:center; color:#4b5563;">
+                <div style="font-size:1.8rem; margin-bottom:8px;">🫀</div>
+                <div style="font-size:0.8rem; font-weight:600; color:#6366f1; margin-bottom:4px;">LAUSM Analysis Pending</div>
+                <div style="font-size:0.72rem; color:#374151; line-height:1.5;">Affected regions will be highlighted here once LAUSM data is loaded from the API key.</div>
+            </div>`;
+    }
 
-    const renderList = () => {
+    // ── Called by _rebuildExplorerForAffected (from postMessage) ──
+    window._explorerSetAffected = function (ap, sv, labels) {
+        if (!list) return;
+
+        // Also hide the old static details box — we render inline now
+        if (details) details.style.display = 'none';
+
         list.innerHTML = '';
-        Object.entries(TISSUE_MAP).forEach(([id, name]) => {
-            const item = document.createElement('div');
-            item.className = `explorer-item ${selectedId === id ? 'active' : ''}`;
-            item.innerHTML = `
-                <span>${name}</span>
-                <div class="eye-icon" style="opacity: 0.6; width: 14px; height: 14px;"></div>
+
+        // Header with count
+        const hdr = document.createElement('div');
+        hdr.style.cssText = 'padding:8px 10px 10px; font-size:0.62rem; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#ef4444; display:flex; align-items:center; gap:6px; border-bottom:1px solid rgba(239,68,68,0.18); margin-bottom:6px;';
+        hdr.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;animation:pulse-fade 1.2s infinite;"></span> ${ap.length} Affected Region${ap.length > 1 ? 's' : ''} Detected`;
+        list.appendChild(hdr);
+
+        let openTid = null;   // which item is currently expanded
+
+        ap.forEach(tid => {
+            if (!TISSUE_MAP[tid]) return;
+            const name = TISSUE_MAP[tid];
+            const label = labels[tid] || name;
+            const sev = sv[tid] || 0;
+            const sevPct = Math.round(sev * 100);
+            const sevColor = sev >= 0.85 ? '#ef4444' : sev >= 0.65 ? '#f59e0b' : '#10b981';
+            const sevIcon = _getSeverityIcon(sev);
+            const sevLabel = _getSeverityLabel(sev);
+
+            // ── Row item with severity icon ──
+            const row = document.createElement('div');
+            row.className = 'explorer-item';
+            row.dataset.id = tid;
+            row.style.cssText = `
+                border-left: 3px solid ${sevColor};
+                padding: 10px 12px 10px 10px;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-radius: 8px;
+                transition: background 0.15s, transform 0.15s;
+                flex-wrap: nowrap;
+                gap: 6px;
+                margin-bottom: 2px;
             `;
-            item.onclick = () => {
-                selectedId = id;
-                renderList();
+            row.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+                    <span style="font-size:1rem; flex-shrink:0;" title="${sevLabel} — ${sevPct}% affected">${sevIcon}</span>
+                    <div style="min-width:0;">
+                        <div style="font-weight:700; color:#f1f5f9; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</div>
+                        <div style="font-size:0.62rem; color:#64748b; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${label}</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                    <div style="text-align:right;">
+                        <div style="font-size:0.78rem; font-weight:800; color:${sevColor}; line-height:1;">${sevPct}%</div>
+                        <div style="font-size:0.52rem; font-weight:700; color:${sevColor}; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">${sevLabel}</div>
+                    </div>
+                    <span class="expand-arrow" style="font-size:0.7rem; color:#475569; transition:transform 0.2s;">▼</span>
+                </div>
+            `;
 
-                details.style.display = 'flex';
-                partNameEl.innerText = name;
+            // ── Inline detail card (hidden initially) ──
+            const card = document.createElement('div');
+            card.style.cssText = `
+                display: none;
+                flex-direction: column;
+                gap: 8px;
+                margin: -2px 0 6px 0;
+                padding: 14px;
+                background: rgba(0,0,0,0.4);
+                border: 1px solid ${sevColor}30;
+                border-top: none;
+                border-radius: 0 0 10px 10px;
+                animation: slideUp 0.2s ease-out;
+            `;
 
-                // Base description
-                const baseNote = CLINICAL_NOTES[id] || 'Observation: Tissue appears normal in this quadrant.';
-                notesEl.innerHTML = `<b style="color: #ef4444; display: block; margin-bottom: 4px;">NOTICE: THIS PART IS AFFECTED</b>${baseNote}`;
-                notesEl.style.color = '#cbd5e1';
+            // Clinical impact note with icon marker
+            const clinicalNote = CLINICAL_NOTES[tid] || 'Hemodynamic stress detected in this anatomical region.';
 
-                // Default to Full Mode for best visualization
-                applyMode(id, 'full');
-                updateUIState('full');
+            card.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                    <div style="width:28px; height:28px; border-radius:8px; background:${sevColor}18; border:1px solid ${sevColor}40; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0;">${sevIcon}</div>
+                    <div>
+                        <div style="font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:${sevColor};">${sevLabel} INVOLVEMENT — ${sevPct}%</div>
+                        <div style="font-size:0.58rem; color:#475569; margin-top:1px;">Stress index: ${(sev).toFixed(2)} | Region: ${name}</div>
+                    </div>
+                </div>
+                <div style="height:5px; border-radius:3px; background:rgba(255,255,255,0.06); overflow:hidden;">
+                    <div style="height:100%; width:${sevPct}%; background:linear-gradient(90deg,${sevColor}aa,${sevColor}); border-radius:3px; transition:width 0.6s;"></div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:flex-start; padding:8px 10px; background:rgba(255,255,255,0.02); border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                    <span style="flex-shrink:0; font-size:0.85rem; margin-top:1px;">📋</span>
+                    <div style="font-size:0.72rem; color:#94a3b8; line-height:1.55;">
+                        ${clinicalNote}
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:2px;">
+                    <button data-mode="separate" style="
+                        padding:8px 4px; font-size:0.62rem; font-weight:700; text-transform:uppercase;
+                        border-radius:6px; cursor:pointer; border:1px solid rgba(59,130,246,0.3);
+                        background:rgba(59,130,246,0.08); color:#93c5fd; transition:0.18s;
+                        letter-spacing:0.05em;
+                    " onmouseover="this.style.background='rgba(59,130,246,0.22)'" 
+                       onmouseout="if(!this.classList.contains('active-mode'))this.style.background='rgba(59,130,246,0.08)'">
+                        ⊡ Separate Mode
+                    </button>
+                    <button data-mode="full" style="
+                        padding:8px 4px; font-size:0.62rem; font-weight:700; text-transform:uppercase;
+                        border-radius:6px; cursor:pointer; border:1px solid rgba(0,209,255,0.3);
+                        background:rgba(0,209,255,0.12); color:#67e8f9; transition:0.18s;
+                        letter-spacing:0.05em;
+                    " onmouseover="this.style.background='rgba(0,209,255,0.22)'"
+                       onmouseout="if(!this.classList.contains('active-mode'))this.style.background='rgba(0,209,255,0.12)'">
+                        ⊞ Full Mode
+                    </button>
+                </div>
+            `;
+
+            // Wire mode buttons inside the inline card
+            const [sepBtn, fullBtnInline] = card.querySelectorAll('button[data-mode]');
+
+            function setModeActive(mode) {
+                if (sepBtn) {
+                    sepBtn.classList.toggle('active-mode', mode === 'separate');
+                    sepBtn.style.background = mode === 'separate' ? 'rgba(59,130,246,0.28)' : 'rgba(59,130,246,0.08)';
+                }
+                if (fullBtnInline) {
+                    fullBtnInline.classList.toggle('active-mode', mode === 'full');
+                    fullBtnInline.style.background = mode === 'full' ? 'rgba(0,209,255,0.28)' : 'rgba(0,209,255,0.12)';
+                }
+                _syncGlobalModeButtons(mode);
+            }
+
+            sepBtn.onclick = (e) => {
+                e.stopPropagation();
+                _applyAffectedParts([tid], { [tid]: sev }, 'separate');
+                setModeActive('separate');
             };
-            list.appendChild(item);
+            fullBtnInline.onclick = (e) => {
+                e.stopPropagation();
+                _applyAffectedParts(ap, sv, 'full');
+                setModeActive('full');
+            };
+
+            // ── Toggle row click ──
+            row.onclick = () => {
+                const isOpen = openTid === tid;
+
+                // Close any open card
+                list.querySelectorAll('.inline-detail-card').forEach(c => {
+                    c.style.display = 'none';
+                });
+                list.querySelectorAll('.explorer-item .expand-arrow').forEach(a => {
+                    a.style.transform = '';
+                });
+                list.querySelectorAll('.explorer-item').forEach(r => r.classList.remove('active'));
+
+                if (isOpen) {
+                    // Clicked again → collapse, reset heart
+                    openTid = null;
+                    _applyAffectedParts(ap, sv, 'full');
+                    if (separateBtn) separateBtn.classList.remove('active');
+                    if (fullBtn) fullBtn.classList.add('active');
+                } else {
+                    // Open this one
+                    openTid = tid;
+                    row.classList.add('active');
+                    row.querySelector('.expand-arrow').style.transform = 'rotate(180deg)';
+                    card.style.display = 'flex';
+                    // Default = Full Mode on open
+                    _applyAffectedParts([tid], { [tid]: sev }, 'full');
+                    setModeActive('full');
+                    // Scroll card into view
+                    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+                }
+            };
+
+            list.appendChild(row);
+            card.classList.add('inline-detail-card');
+            list.appendChild(card);
         });
-    };
 
-    separateBtn.onclick = () => {
-        if (!selectedId) return;
-        applyMode(selectedId, 'separate');
-        updateUIState('separate');
-    };
+        // ── Render Floating 3D Markers ──
+        _renderFloatingMarkers(ap, sv, labels);
 
-    fullBtn.onclick = () => {
-        if (!selectedId) return;
-        applyMode(selectedId, 'full');
-        updateUIState('full');
-    };
+        // ── Global Mode Sync Logic ──
+        function _syncGlobalModeButtons(mode) {
 
-    closeBtn.onclick = () => {
-        details.style.display = 'none';
-        selectedId = null;
-        renderList();
-        // Reset heart to full visibility
-        Object.keys(TISSUE_MAP).forEach(id => {
-            setTissueVisibility(id, 1.0);
-        });
-    };
+            if (separateBtn) separateBtn.classList.toggle('active', mode === 'separate');
+            if (fullBtn) fullBtn.classList.toggle('active', mode === 'full');
+        }
 
-    renderList();
+        // --- Global Button Wiring (OUTSIDE the loop) ---
+        if (separateBtn) {
+            separateBtn.onclick = () => {
+                _applyAffectedParts(ap, sv, 'separate');
+                _syncGlobalModeButtons('separate');
+                list.querySelectorAll('.inline-detail-card').forEach(c => c.style.display = 'none');
+            };
+        }
+        if (fullBtn) {
+            fullBtn.onclick = () => {
+                _applyAffectedParts(ap, sv, 'full');
+                _syncGlobalModeButtons('full');
+                list.querySelectorAll('.inline-detail-card').forEach(c => c.style.display = 'none');
+            };
+        }
+    };
 }
+
+// Fixed rough screen positions for standard frontal heart view
+const ANATOMY_POSITIONS = {
+    'la': { top: '35%', left: '55%' },
+    'ra': { top: '48%', left: '42%' },
+    'lv': { top: '65%', left: '56%' },
+    'rv': { top: '65%', left: '45%' },
+    'Heartmuscles': { top: '55%', left: '50%' },
+    'Largevessels': { top: '22%', left: '48%' },
+    'Smallvessels': { top: '65%', left: '38%' },
+    'Pulmonaryvessels': { top: '38%', left: '58%' },
+    'SVenaCava': { top: '25%', left: '41%' },
+    'IVenaCava': { top: '78%', left: '40%' },
+    'bicuspid': { top: '45%', left: '52%' },
+    'tricuspid': { top: '50%', left: '48%' },
+    'sanvan': { top: '40%', left: '46%' },
+    'internal': { top: '50%', left: '50%' }
+};
+
+function _renderFloatingMarkers(ap, sv, labels) {
+    let container = document.getElementById('viewport-container');
+    if (!container) return;
+
+    // Clear old markers if any
+    document.querySelectorAll('.anatomical-marker').forEach(el => el.remove());
+
+    container.style.position = 'relative';
+
+    ap.forEach((tid, index) => {
+        if (!ANATOMY_POSITIONS[tid]) return;
+
+        const pos = ANATOMY_POSITIONS[tid];
+        const sev = sv[tid] || 0;
+        const sevPct = Math.round(sev * 100);
+        const name = TISSUE_MAP[tid];
+        const sevColor = sev >= 0.85 ? '#ef4444' : sev >= 0.65 ? '#f59e0b' : '#10b981';
+
+        const marker = document.createElement('div');
+        marker.className = 'anatomical-marker';
+        marker.style.top = pos.top;
+        marker.style.left = pos.left;
+        marker.style.setProperty('--marker-color', sevColor);
+        // Stagger animation
+        marker.style.animationDelay = `${index * 0.15}s`;
+
+        marker.innerHTML = `
+            <div class="marker-dot-wrapper">
+                <div class="marker-pulse"></div>
+                <div class="marker-dot"></div>
+            </div>
+            <div class="marker-label">
+                <span class="pct">${sevPct}%</span> ${name}
+            </div>
+        `;
+
+        container.appendChild(marker);
+    });
+}
+
 window.onload = init;
+
+// Remote highlight bridge
+let LAUSM_AFFECTED_PARTS = null; // persisted across mode switches
+let LAUSM_CURRENT_MODE = 'full';
+
+window.addEventListener('message', (e) => {
+    if (!e.data) return;
+
+    // --- Single-part highlight (legacy) ---
+    if (e.data.type === 'highlight') {
+        const p = e.data.part;
+        const v = e.data.intensity || 1.0;
+        if (p && TISSUE_MAP[p]) {
+            setTissueVisibility(p, v);
+            console.log("Highlighting tissue:", p);
+        }
+        return;
+    }
+
+    // --- Multi-part highlight from LAUSM affected_parts analysis ---
+    if (e.data.type === 'highlight_affected') {
+        const ap = e.data.affected_parts || [];       // ["la", "bicuspid", …]
+        const sv = e.data.severity || {};       // {"la": 0.90, …}
+        const mode = e.data.mode || 'full';   // 'full' | 'separate'
+
+        if (ap.length === 0) return;
+
+        LAUSM_AFFECTED_PARTS = { parts: ap, severity: sv };
+        LAUSM_CURRENT_MODE = mode;
+
+        _applyAffectedParts(ap, sv, mode);
+
+        // Rebuild the Anatomical Explorer to show ONLY affected parts
+        _rebuildExplorerForAffected(e.data);
+        return;
+    }
+
+    // --- Mode switch from parent (e.g. Analyze dashboard sends 'switch_mode') ---
+    if (e.data.type === 'switch_mode' && LAUSM_AFFECTED_PARTS) {
+        LAUSM_CURRENT_MODE = e.data.mode || 'full';
+        _applyAffectedParts(
+            LAUSM_AFFECTED_PARTS.parts,
+            LAUSM_AFFECTED_PARTS.severity,
+            LAUSM_CURRENT_MODE
+        );
+    }
+});
+
+function _applyAffectedParts(parts, severity, mode) {
+    Object.keys(TISSUE_MAP).forEach(id => {
+        const isAffected = parts.includes(id);
+        let vis;
+        if (mode === 'separate') {
+            vis = isAffected ? Math.max(0.8, severity[id] || 1.0) : 0.0;
+        } else { // 'full'
+            // Highlight affected (min 0.8), ghost others at 0.2 for high contrast
+            vis = isAffected ? Math.max(0.8, severity[id] || 1.0) : 0.2;
+        }
+        setTissueVisibility(id, vis);
+    });
+}
+
+function _rebuildExplorerForAffected(data) {
+    const ap = data.affected_parts || [];
+    const sv = data.severity || {};
+    const labels = data.labels || {};
+    if (typeof window._explorerSetAffected === 'function') {
+        window._explorerSetAffected(ap, sv, labels);
+    }
+}
+
+// ─── Auto-fetch LAUSM data from server if not received via postMessage ───
+// Wait a few seconds after page load; if no data arrived from parent iframe,
+// attempt to fetch the latest LAUSM affected parts analysis from the server.
+setTimeout(() => {
+    if (LAUSM_AFFECTED_PARTS) return; // Data already received via postMessage
+
+    fetch('/api/latest-lausm-affected')
+        .then(res => {
+            if (!res.ok) throw new Error('No LAUSM data');
+            return res.json();
+        })
+        .then(data => {
+            if (!data.affected_parts || data.affected_parts.length === 0) return;
+
+            console.log('[Digital Twin] Auto-loaded LAUSM affected parts from server:', data);
+
+            LAUSM_AFFECTED_PARTS = {
+                parts: data.affected_parts,
+                severity: data.severity
+            };
+            LAUSM_CURRENT_MODE = 'full';
+
+            _applyAffectedParts(data.affected_parts, data.severity, 'full');
+            _rebuildExplorerForAffected(data);
+        })
+        .catch(err => {
+            console.log('[Digital Twin] No LAUSM data available from server:', err.message);
+        });
+}, 2500);

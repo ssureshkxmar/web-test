@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinical AI | AI-Powered Signal Extraction</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png">
+    <link rel="shortcut icon" href="/static/img/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -221,27 +224,29 @@
         }
 
         /* ─── Modern Navigation Bars ─── */
+        .navbar {
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 24px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 100px;
+        }
+
         .navbar-container {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            padding: 24px;
             z-index: 1000;
-            display: flex;
-            justify-content: center;
-        }
-
-        .navbar {
-            background: rgba(10, 10, 15, 0.4);
-            backdrop-filter: blur(20px);
-            padding: 8px 12px;
-            border-radius: 100px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1000px;
+            padding: 15px 20px;
+            background: linear-gradient(to bottom, rgba(7, 7, 10, 0.8), transparent);
         }
 
         .logo {
@@ -901,6 +906,82 @@
             font-size: 0.9rem;
             border-top: 1px solid var(--border-color);
         }
+
+        /* ─── Comprehensive Mobile Responsiveness ─── */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+                padding: 0 15px;
+            }
+
+            .hero p {
+                font-size: 1rem;
+                padding: 0 15px;
+            }
+
+            .main-container {
+                width: 100%;
+                margin: 0;
+            }
+
+            .premium-card-wrapper {
+                border-radius: 0;
+                padding: 0;
+            }
+
+            .modern-card {
+                border-radius: 0;
+                border: none;
+            }
+
+            .input-section {
+                padding: 1.5rem;
+            }
+
+            .upload-inner {
+                padding: 3rem 1rem;
+            }
+
+            .ref-drop-zone {
+                padding: 1rem;
+            }
+
+            .u-nav-btn {
+                padding: 10px 15px;
+                font-size: 0.75rem;
+            }
+
+            .info-header h2 {
+                font-size: 1.8rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-card {
+                padding: 1.5rem;
+            }
+
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                max-width: 100%;
+                border-radius: 0;
+                border: none;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-body {
+                flex-grow: 1;
+                overflow-y: auto;
+            }
+
+            .modal-footer {
+                padding-bottom: 40px;
+            }
+        }
     </style>
 </head>
 
@@ -912,8 +993,12 @@
                 <div class="nav-divider" style="height: 30px;"></div>
                 <div class="nav-box">
                     <a href="/analyze" class="nav-btn">
-                        <i class="fas fa-microscope"></i> <span></span>Analyze</span>
+                        <i class="fas fa-microscope"></i> <span>Analyze</span>
                     </a>
+                    <a href="/generator" class="nav-btn">
+                        <i class="fas fa-image"></i> <span>Generator</span>
+                    </a>
+
                     {% if session.get('user_email') %}
                     <a href="/history" class="nav-btn">
                         <i class="fas fa-history"></i> <span>History</span>
@@ -1088,6 +1173,22 @@
                             </div>
                         </div>
 
+                        <div class="ref-upload-area" style="margin-top: 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                                <div
+                                    style="width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-cubes" style="font-size: 0.8rem; color: #10b981;"></i>
+                                </div>
+                                <span style="font-size: 0.9rem; font-weight: 600;">LAUSM 3D Mesh
+                                    (Optional)</span>
+                            </div>
+                            <div class="ref-drop-zone">
+                                <p>Upload .vtk mesh file for standardized Atrial unfolding</p>
+                                <input type="file" name="vtk_file" class="ref-file-input" id="vtk-file-input"
+                                    accept=".vtk">
+                            </div>
+                        </div>
+
                         <div id="file-info">
                             <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
                                 <div class="file-status-icon">
@@ -1147,23 +1248,27 @@
     <section class="info-section">
         <div class="info-header">
             <h2>The Digitization Framework</h2>
-            <p>Our proprietary AI pipeline transforms raw visual data into precise medical fidelity.</p>
+            <p>Our proprietary AI pipeline transforms raw paper-based ECG data into clinical-grade physiological
+                metrics.</p>
         </div>
         <div class="features">
             <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
-                <h4>Computer Vision</h4>
-                <p>Grid-signal dissonance suppression using advanced segmentation masks and adaptive thresholding.</p>
+                <div class="feature-icon"><i class="fas fa-microscope"></i></div>
+                <h4>Neural Signal Extraction</h4>
+                <p>Isometric reconstruction using residual U-Nets to isolate 12-lead voltage arrays from gridded
+                    backgrounds with 99.2% fidelity.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-wave-square"></i></div>
-                <h4>Signal Mapping</h4>
-                <p>Isometric reconstruction of 12-lead voltage arrays into standardized 500Hz digital metrics.</p>
+                <div class="feature-icon"><i class="fas fa-project-diagram"></i></div>
+                <h4>Atrial Hemodynamics</h4>
+                <p>LAUSM-unfolding synthesis that maps biophysical scalar fields to anatomical geometry for regional
+                    quantification.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-brain"></i></div>
-                <h4>Pathological AI</h4>
-                <p>Real-time classification of cardiovascular anomalies using residual spatio-temporal networks.</p>
+                <div class="feature-icon"><i class="fas fa-heartbeat"></i></div>
+                <h4>Clinically-Valid Digital Twin</h4>
+                <p>Dynamic 3D heart modeling synchronized with patient-specific R-R intervals and volumetric
+                    displacement metrics.</p>
             </div>
         </div>
     </section>
@@ -1230,8 +1335,23 @@
             dropZone.addEventListener(name, () => dropZone.style.borderColor = '', false);
         });
 
-        function openProfileSettings() {
+        async function openProfileSettings() {
             document.getElementById('profileModal').classList.add('show');
+            try {
+                const res = await fetch('/api/user/stats');
+                const stats = await res.json();
+                const storageLabel = document.querySelector('.modal-body span[style*="Storage Usage"]');
+                const storageProgress = document.querySelector('.modal-body div[style*="linear-gradient"]');
+                const memberSince = document.querySelector('.modal-body span[style*="Member since"]');
+                const activePlan = document.querySelector('.modal-body span[style*="ACTIVE PLAN"]');
+
+                if (storageLabel) storageLabel.nextElementSibling.innerText = stats.storage_usage;
+                if (storageProgress) storageProgress.style.width = stats.storage_percent + '%';
+                if (memberSince) memberSince.innerText = 'Member since: ' + stats.member_since;
+                if (activePlan) activePlan.innerText = stats.plan + ' PLAN';
+            } catch (e) {
+                console.warn("Failed to fetch user stats", e);
+            }
         }
 
         function closeProfileSettings() {
@@ -1270,6 +1390,8 @@
             }
         };
     </script>
+
+    {% include "cardio_chat_widget.html" %}
 </body>
 
 </html>

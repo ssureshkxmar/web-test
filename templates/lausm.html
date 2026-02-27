@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAUSM - Left Atrial Unfolding Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #07070a;
+            --panel-bg: rgba(20, 20, 25, 0.6);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent-1: #4F46E5;
+            --accent-2: #818CF8;
+            --font-family: 'Outfit', sans-serif;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1F2937, var(--bg-dark));
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .navbar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 24px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar {
+            background: rgba(10, 10, 15, 0.4);
+            backdrop-filter: blur(20px);
+            padding: 8px 12px;
+            border-radius: 100px;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .logo-nav {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            margin-left: 10px;
+        }
+
+        .layout-container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 2rem;
+            min-height: 100vh;
+            padding: 120px 2rem 2rem;
+            flex-wrap: wrap;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .results-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 40px;
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .results-container.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0 0 12px 0;
+            text-align: center;
+            background: linear-gradient(135deg, #A78BFA, #60A5FA);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9CA3AF;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .upload-box {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-box:hover {
+            border-color: var(--accent-1);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--accent-1);
+        }
+
+        input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #9CA3AF;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.95rem;
+            color: #E5E7EB;
+            font-weight: 500;
+        }
+
+        select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select:focus {
+            border-color: var(--accent-1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6);
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loader-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--accent-1);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result-img-wrapper {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .result-img-wrapper img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <a href="/" class="logo-nav">Clinical AI</a>
+                <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.1); margin: 0 10px;"></div>
+                <div class="nav-box">
+                    <a href="/" class="nav-btn"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="nav-box">
+                    <a href="/analyze" class="nav-btn"><i class="fas fa-microscope"></i> Analyze</a>
+                    <a href="/generator" class="nav-btn"><i class="fas fa-image"></i> Generator</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="layout-container">
+        <div class="container">
+            <h1>LAUSM Insight</h1>
+            <p class="subtitle">Standardized 2D Maps for Heart's Left Atrium</p>
+
+            <form id="uploadForm">
+                <div class="upload-box" id="uploadBox">
+                    <div class="upload-icon"><i class="fas fa-cubes"></i></div>
+                    <h3 style="margin:0; font-weight:500;">Drop 3D Mesh (.vtk)</h3>
+                    <p style="color:#9CA3AF; font-size:14px; margin-top:8px;">or click to browse from your computer</p>
+                    <input type="file" name="file" accept=".vtk" required id="fileInput">
+                </div>
+
+                <div class="file-name" id="fileNameDisplay">No file selected</div>
+
+                <div class="form-group">
+                    <label for="datatype">Select Data Type</label>
+                    <select name="datatype" id="datatype">
+                        <option value="tavf">TAVF (WSS, Age, Voltage, Fibrosis)</option>
+                        <option value="scalar">Generic Scalar</option>
+                        <option value="force">Catheter Contact Force</option>
+                        <option value="lge">LGE-CMR</option>
+                        <option value="lat">Local Activation Time</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn">Generate Maps</button>
+
+                <div class="loader" id="loader">
+                    <div class="loader-spinner"></div>
+                    <p>Processing 3D Mesh... this may take some time.</p>
+                </div>
+            </form>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <h2 style="margin-bottom: 20px; text-align: center;">Generated Visualization</h2>
+            <div id="imageGallery" style="display: grid; gap: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loader = document.getElementById('loader');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const imageGallery = document.getElementById('imageGallery');
+
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.textContent = this.files[0].name;
+            } else {
+                fileNameDisplay.textContent = 'No file selected';
+            }
+        });
+
+        uploadForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            submitBtn.style.display = 'none';
+            loader.style.display = 'block';
+            resultsContainer.classList.remove('active');
+            imageGallery.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('datatype', document.getElementById('datatype').value);
+
+            try {
+                const response = await fetch('/api/lausm/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    // Show 3D and 2D map views
+                    imageGallery.innerHTML = `
+                        <div style="grid-column: span 2; margin-top: 1rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <h4 style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: #10b981;">
+                                    <i class="fas fa-check-circle"></i> LAUSM Analysis Complete
+                                </h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted);">Hemodynamic results have been mapped to standardized geometry. Import this API key into the Analysis Dashboard to visualize metrics.</p>
+                            </div>
+                            <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between;">
+                                <div style="background: rgba(0,0,0,0.5); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.5); display: flex; align-items: center; gap: 15px; flex: 1;">
+                                    <span style="font-family: monospace; color: #34d399; font-size: 0.95rem; flex: 1;">${data.api_key}</span>
+                                    <button onclick="navigator.clipboard.writeText('${data.api_key}')" style="padding: 0.4rem 0.8rem; background: transparent; border: 1px solid #10b981; border-radius: 6px; color: #10b981; cursor: pointer; font-size: 0.8rem; font-weight: 600;">Copy API Key</button>
+                                </div>
+                                <a href="/analyze?key=${data.api_key}" class="btn" style="background: #10b981; border: none; padding: 0.75rem 2rem; text-decoration: none; width: auto; margin-top: 0;">Open in Dashboard <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    `;
+
+                    data.images.forEach(imgUrl => {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'result-img-wrapper';
+                        const img = document.createElement('img');
+                        img.src = `${imgUrl}?t=${new Date().getTime()}`;
+                        wrapper.appendChild(img);
+                        imageGallery.appendChild(wrapper);
+                    });
+                    resultsContainer.classList.add('active');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('An error occurred during upload.');
+                console.error(err);
+            } finally {
+                submitBtn.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

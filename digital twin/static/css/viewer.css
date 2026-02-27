@@ -458,6 +458,13 @@
     box-shadow: 0 0 10px var(--glow);
 }
 
+#mode-full.active {
+    background: rgba(0, 209, 255, 0.2);
+    border-color: var(--secondary);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 209, 255, 0.3);
+}
+
 #mode-working.active {
     background: rgba(0, 209, 255, 0.2);
     border-color: var(--secondary);
